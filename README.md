@@ -14,14 +14,19 @@
 This repository contains supplemental packages for [`goyek`](https://github.com/goyek/goyek)
 which mainly offer convenience.
 
-Packages in the repository depend on additional libraries
+Packages in this repository depend on additional libraries
 and require a newer version of Go than [`goyek`](https://github.com/goyek/goyek).
+See [`go.mod`](go.mod) for details.
 
 Package [`boot`](https://pkg.go.dev/github.com/goyek/x/boot)
 contains an extension of `Flow.Main` which additionally
 defines flags and configures the flow in a convenient way.
 
+Package [`cmd`](https://pkg.go.dev/github.com/goyek/x/cmd) offers functions for running programs in a Shell-like way.
+
 Package [`color`](https://pkg.go.dev/github.com/goyek/x/color)
 contains goyek features which additionally have colors.
 
-<!-- Package `cmd`  offers functions for running programs in a Shell-like way. -->
+## License
+
+**goyek/x** is licensed under the terms of the [MIT license](LICENSE).
