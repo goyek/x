@@ -13,7 +13,7 @@ import (
 // Option configures the command.
 type Option func(tf *goyek.TF, cmd *exec.Cmd)
 
-// Exec runs
+// Exec runs the command.
 // It calls tf.Error[f] and returns false in case of any problems.
 // Example usage:
 //
