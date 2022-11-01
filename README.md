@@ -1,4 +1,4 @@
-# goyek repository template
+# goyek x packages
 
 [![GitHub Release](https://img.shields.io/github/v/release/goyek/x)](https://github.com/goyek/x/releases)
 [![Go Reference](https://pkg.go.dev/badge/github.com/goyek/x.svg)](https://pkg.go.dev/github.com/goyek/x)
