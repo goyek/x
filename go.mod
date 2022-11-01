@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/fatih/color v1.13.0
 	github.com/goyek/goyek/v2 v2.0.0-rc.8
+	github.com/mattn/go-shellwords v1.0.12
 )
 
 require (
