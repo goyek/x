@@ -27,6 +27,10 @@ Package [`cmd`](https://pkg.go.dev/github.com/goyek/x/cmd) offers functions for 
 Package [`color`](https://pkg.go.dev/github.com/goyek/x/color)
 contains goyek features which additionally have colors.
 
+## Example
+
+See [build](build) which is this repository's own build pipeline (dogfooding).
+
 ## License
 
 **goyek/x** is licensed under the terms of the [MIT license](LICENSE).
