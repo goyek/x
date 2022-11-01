@@ -1,11 +1,14 @@
-module github.com/goyek/template/build
+module github.com/goyek/x/build
 
 go 1.19
+
+replace github.com/goyek/x => ../
 
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/goyek/goyek/v2 v2.0.0-rc.8
+	github.com/goyek/x v0.0.0-00010101000000-000000000000
 	github.com/mattn/go-shellwords v1.0.12
 )
 

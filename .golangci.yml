@@ -2,7 +2,7 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   goimports:
-    local-prefixes: github.com/goyek/template
+    local-prefixes: github.com/goyek/x
   govet:
     check-shadowing: true
   misspell:
@@ -18,13 +18,11 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - bodyclose
     - dogsled
     - dupl
     - errcheck
     - exportloopref
     - funlen
-    - gochecknoinits
     - gocritic
     - goconst
     - gocyclo

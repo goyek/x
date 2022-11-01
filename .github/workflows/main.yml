@@ -1,0 +1,15 @@
+name: main
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  godoc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 1 minute
+        # make sure that new the tag is available for pkg.go.dev
+        run: sleep 60
+      - name: Update pkg.go.dev
+        run: curl https://proxy.golang.org/github.com/${{ github.repository }}/@v/${{ github.sha }}.info
