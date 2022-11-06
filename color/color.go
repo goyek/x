@@ -131,7 +131,7 @@ func (l *CodeLineLogger) Skipf(w io.Writer, format string, args ...interface{}) 
 // Helper may be called simultaneously from multiple goroutines.
 func (l *CodeLineLogger) Helper() {
 	var pc [1]uintptr
-	const skip = 3 // skip: runtime.Callers + codeLineLogger.Helper + TF.Helper
+	const skip = 3 // skip: runtime.Callers + codeLineLogger.Helper + A.Helper
 	n := runtime.Callers(skip, pc[:])
 	if n == 0 {
 		panic("zero callers found")
@@ -219,7 +219,7 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 		if frame.Function == "github.com/goyek/goyek/v2.taskRunner.run.func1" {
 			// We've gone up all the way to the runner calling
 			// the action (so the user must have
-			// called tf.Helper from inside that action).
+			// called a.Helper from inside that action).
 			return prevFrame
 		}
 		// If more helper PCs have been added since we last did the conversion
