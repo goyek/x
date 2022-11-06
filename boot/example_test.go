@@ -16,8 +16,8 @@ func ExampleMain() {
 	goyek.Define(goyek.Task{
 		Name:  "hi",
 		Usage: "Greetings",
-		Action: func(tf *goyek.TF) {
-			tf.Log(*msg)
+		Action: func(a *goyek.A) {
+			a.Log(*msg)
 		},
 	})
 
