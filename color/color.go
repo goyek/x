@@ -1,11 +1,15 @@
 // Package color contains goyek features which additionally
 // have colors.
+//
+// Set NO_COLOR environment variable to not an empty string to prevent the addition of colors.
+//
+// By default only TTY streams are colorized.
+// However, you can use ForceColor function to override this behavior.
 package color
 
 import (
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -15,8 +19,15 @@ import (
 	"github.com/goyek/goyek/v2"
 )
 
-func init() {
-	color.NoColor = os.Getenv("NO_COLOR") != ""
+// Force always colorized the output.
+// It bypasses the check for a non TTY output.
+func Force() {
+	color.NoColor = false
+}
+
+// Disable prevents colorizing the output.
+func Disable() {
+	color.NoColor = true
 }
 
 // ReportStatus is a middleware which reports the task run status with colors.

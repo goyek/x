@@ -16,11 +16,13 @@ import (
 
 // Reusable flags used by the build pipeline.
 var (
-	v       = flag.Bool("v", false, "print all tasks and tests as they are run")
-	dryRun  = flag.Bool("dry-run", false, "print all tasks that would be run without running them")
-	longRun = flag.Duration("long-run", time.Minute, "print when a task takes longer")
-	noDeps  = flag.Bool("no-deps", false, "do not process dependencies")
-	skip    = flag.String("skip", "", "skip processing the `comma-separated tasks`")
+	v          = flag.Bool("v", false, "print all tasks and tests as they are run")
+	dryRun     = flag.Bool("dry-run", false, "print all tasks that would be run without running them")
+	longRun    = flag.Duration("long-run", time.Minute, "print when a task takes longer")
+	noDeps     = flag.Bool("no-deps", false, "do not process dependencies")
+	skip       = flag.String("skip", "", "skip processing the `comma-separated tasks`")
+	noColor    = flag.Bool("no-color", false, "disable colorizing output")
+	forceColor = flag.Bool("force-color", false, "force colorizing output")
 )
 
 // Main is an extension of goyek.Main which additionally
@@ -43,6 +45,12 @@ func Main() {
 	}
 	if *longRun > 0 {
 		goyek.Use(middleware.ReportLongRun(*longRun))
+	}
+	if *noColor {
+		color.Disable()
+	}
+	if *forceColor {
+		color.Force()
 	}
 
 	var opts []goyek.Option
