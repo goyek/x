@@ -17,7 +17,7 @@ import (
 // Reusable flags used by the build pipeline.
 var (
 	v       = flag.Bool("v", false, "print all tasks as they are run")
-	dryRun  = flag.Bool("dry-run", false, "print all tasks without executing action")
+	dryRun  = flag.Bool("dry-run", false, "print all tasks without executing actions")
 	longRun = flag.Duration("long-run", time.Minute, "print when a task takes longer")
 	noDeps  = flag.Bool("no-deps", false, "do not process dependencies")
 	skip    = flag.String("skip", "", "skip processing the `comma-separated tasks`")
