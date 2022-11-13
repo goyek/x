@@ -10,10 +10,8 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ### Added
 
-- Add `color.Disable` disables colorizing the output.
-- Add `color.Force` forces colorizing the output.
-- Add `-no-color` and `-force-color` flags in `boot.Main`
-  to give more control on colorizing the output.
+- Add `color.NoColor` function which disables colorizing the output.
+- Add `-no-color` flag to `boot.Main` that disables colorizing the output.
 
 ## [0.1.1](https://github.com/goyek/goyek/releases/tag/v0.1.1) - 2022-11-06
 

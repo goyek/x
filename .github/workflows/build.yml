@@ -19,7 +19,7 @@ jobs:
         with:
           go-version: '1.19'
       - name: Build
-        run: ./goyek.sh -v -force-color all diff
+        run: ./goyek.sh -v all diff
 
   compatibility:
     strategy:
