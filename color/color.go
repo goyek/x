@@ -1,10 +1,11 @@
 // Package color contains goyek features which additionally
 // have colors.
 //
-// Set NO_COLOR environment variable to not an empty string to prevent the addition of colors.
+// Set NO_COLOR environment variable to a non-empty string
+// or use the Disable function to prevent the addition of colors.
 //
 // By default only TTY streams are colorized.
-// However, you can use ForceColor function to override this behavior.
+// Use the Force function to override this behavior.
 package color
 
 import (

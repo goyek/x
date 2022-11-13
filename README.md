@@ -31,7 +31,8 @@ offers functions for running programs in a Shell-like way.
 
 Package [`color`](https://pkg.go.dev/github.com/goyek/x/color)
 contains goyek features which additionally have colors.
-The package supports the [`NO_COLOR` environment variable](https://no-color.org/).
+The package supports the [`NO_COLOR`](https://no-color.org/)
+environment variable.
 
 ## Example
 
