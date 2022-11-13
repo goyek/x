@@ -1,4 +1,4 @@
-// Package boot is contains an extension of goyek.Main which additionally
+// Package boot contains an extension of goyek.Main which additionally
 // defines flags and configures the flow in a convenient way.
 package boot
 
