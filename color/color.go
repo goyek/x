@@ -2,15 +2,13 @@
 // have colors.
 //
 // Set NO_COLOR environment variable to a non-empty string
-// or use the Disable function to prevent the addition of colors.
-//
-// By default only TTY streams are colorized.
-// Use the Force function to override this behavior.
+// or use the NoColor function to prevent colorizing the output.
 package color
 
 import (
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -20,14 +18,12 @@ import (
 	"github.com/goyek/goyek/v2"
 )
 
-// Force always colorized the output.
-// It bypasses the check for a non TTY output.
-func Force() {
-	color.NoColor = false
+func init() {
+	color.NoColor = os.Getenv("NO_COLOR") != ""
 }
 
-// Disable prevents colorizing the output.
-func Disable() {
+// NoColor prevents colorizing the output.
+func NoColor() {
 	color.NoColor = true
 }
 
