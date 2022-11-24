@@ -8,6 +8,8 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ## [Unreleased](https://github.com/goyek/goyek/compare/v0.1.3...HEAD)
 
+This release bumps `goyek` to `2.0.0-rc.12`.
+
 ## [0.1.3](https://github.com/goyek/goyek/releases/tag/v0.1.3) - 2022-11-13
 
 ### Fixed
