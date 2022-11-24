@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
 
-## [Unreleased](https://github.com/goyek/goyek/compare/v0.1.3...HEAD)
+## [Unreleased](https://github.com/goyek/goyek/compare/v0.1.4...HEAD)
+
+## [0.1.4](https://github.com/goyek/goyek/releases/tag/v0.1.4) - 2022-11-24
 
 This release bumps `goyek` to `2.0.0-rc.12`.
 
