@@ -27,7 +27,10 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		return false
 	}
 
-	cmd := a.Cmd(args[0], args[1:]...)
+	cmd := exec.CommandContext(a.Context(), args[0], args[1:]...) //nolint:gosec // it is a convenient function to run programs
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = a.Output()
+	cmd.Stderr = a.Output()
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, envs...)
 	for _, opt := range opts {
