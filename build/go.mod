@@ -1,13 +1,13 @@
 module github.com/goyek/x/build
 
-go 1.19
+go 1.20
 
 replace github.com/goyek/x => ../
 
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.51.1
-	github.com/goyek/goyek/v2 v2.0.0-rc.12
+	github.com/goyek/goyek/v2 v2.0.0
 	github.com/goyek/x v0.0.0-00010101000000-000000000000
 )
 

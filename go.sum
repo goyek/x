@@ -1,7 +1,7 @@
 github.com/fatih/color v1.14.1 h1:qfhVLaG5s+nCROl1zJsZRxFeYrHLqWroPOQ8BWiNb4w=
 github.com/fatih/color v1.14.1/go.mod h1:2oHN61fhTpgcxD3TSWCgKDiH1+x4OiDVVGH8WlgGZGg=
-github.com/goyek/goyek/v2 v2.0.0-rc.12 h1:y0cYeaQYOQTmOwpTb7mBijla2HfaOtuSksJO7NeLnOo=
-github.com/goyek/goyek/v2 v2.0.0-rc.12/go.mod h1:qtHlK7t/dYs1Dw7mLXjEVmgE3nccNa7mQW/RmasOoYg=
+github.com/goyek/goyek/v2 v2.0.0 h1:/QAVDjTAsJ+caIoXNDSWs6jBHohh3CEzJ+vCcggjoWw=
+github.com/goyek/goyek/v2 v2.0.0/go.mod h1:qtHlK7t/dYs1Dw7mLXjEVmgE3nccNa7mQW/RmasOoYg=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
