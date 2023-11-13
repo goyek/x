@@ -12,7 +12,6 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 - Bump `github.com/fatih/color` to `1.16.0`.
 
-
 ## [0.1.5](https://github.com/goyek/x/releases/tag/v0.1.5) - 2023-02-08
 
 ### Changed
