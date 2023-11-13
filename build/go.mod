@@ -1,6 +1,6 @@
 module github.com/goyek/x/build
 
-go 1.20
+go 1.21
 
 replace github.com/goyek/x => ../
 
