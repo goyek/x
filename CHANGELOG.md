@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
 
+## Unreleased
+
+### Added
+
+- `boot.Main` buffers the output from parallel tasks to not have mixed output
+  rom parallel tasks execution.
+
+### Changed
+
+- Bump `github.com/goyek/goyek` to `2.1.0`.
+
 ## [0.1.6](https://github.com/goyek/x/releases/tag/v0.1.6) - 2023-11-13
 
 ### Changed

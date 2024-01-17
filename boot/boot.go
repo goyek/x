@@ -39,7 +39,9 @@ func Main() {
 		goyek.Use(middleware.DryRun)
 	}
 	goyek.Use(color.ReportStatus)
-	if !*v {
+	if *v {
+		goyek.Use(middleware.BufferParallel)
+	} else {
 		goyek.Use(middleware.SilentNonFailed)
 	}
 	if *longRun > 0 {

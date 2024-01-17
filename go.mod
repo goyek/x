@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/fatih/color v1.16.0
-	github.com/goyek/goyek/v2 v2.0.0
+	github.com/goyek/goyek/v2 v2.1.0
 	github.com/mattn/go-shellwords v1.0.12
 )
 
