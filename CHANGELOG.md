@@ -11,7 +11,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 ### Added
 
 - `boot.Main` buffers the output from parallel tasks to not have mixed output
-  rom parallel tasks execution.
+  from parallel tasks execution.
 
 ### Changed
 
