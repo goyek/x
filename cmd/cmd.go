@@ -66,21 +66,21 @@ func Env(k, v string) Option {
 
 // Stdin is an option to set the standard input.
 func Stdin(r io.Reader) Option {
-	return func(a *goyek.A, cmd *exec.Cmd) {
+	return func(_ *goyek.A, cmd *exec.Cmd) {
 		cmd.Stdin = r
 	}
 }
 
 // Stdout is an option to set the standard output.
 func Stdout(w io.Writer) Option {
-	return func(a *goyek.A, cmd *exec.Cmd) {
+	return func(_ *goyek.A, cmd *exec.Cmd) {
 		cmd.Stdout = w
 	}
 }
 
 // Stderr is an option to set the standard error.
 func Stderr(w io.Writer) Option {
-	return func(a *goyek.A, cmd *exec.Cmd) {
+	return func(_ *goyek.A, cmd *exec.Cmd) {
 		cmd.Stderr = w
 	}
 }
