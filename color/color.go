@@ -35,7 +35,7 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		c := color.New(color.FgBlue)
 
 		// report start task
-		c.Fprintf(in.Output, "===== TASK  %s\n", in.TaskName) //nolint:errcheck,gosec // not checking errors when writing to output
+		c.Fprintf(in.Output, "===== TASK  %s\n", in.TaskName)
 		start := time.Now()
 
 		// run
@@ -54,17 +54,17 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		case goyek.StatusNotRun:
 			status = "NOOP"
 		}
-		c.Fprintf(in.Output, "----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds()) //nolint:errcheck,gosec // not checking errors when writing to output
+		c.Fprintf(in.Output, "----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds())
 
 		// report panic if happened
 		if res.PanicStack != nil {
 			if res.PanicValue != nil {
-				c.Fprintf(in.Output, "panic: %v", res.PanicValue) //nolint:errcheck,gosec // not checking errors when writing to output
+				c.Fprintf(in.Output, "panic: %v", res.PanicValue)
 			} else {
-				c.Fprint(in.Output, "panic(nil) or runtime.Goexit() called") //nolint:errcheck,gosec // not checking errors when writing to output
+				c.Fprint(in.Output, "panic(nil) or runtime.Goexit() called")
 			}
-			io.WriteString(in.Output, "\n\n")          //nolint:errcheck,gosec // not checking errors when writing to output
-			c.Fprintf(in.Output, "%s", res.PanicStack) //nolint:errcheck,gosec // not checking errors when writing to output
+			io.WriteString(in.Output, "\n\n") //nolint:errcheck // not checking errors when writing to output
+			c.Fprintf(in.Output, "%s", res.PanicStack)
 		}
 
 		return res
@@ -82,56 +82,56 @@ type CodeLineLogger struct {
 func (l *CodeLineLogger) Log(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	io.WriteString(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	io.WriteString(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Logf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Logf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	io.WriteString(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	io.WriteString(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Error is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Error(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Errorf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Errorf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Fatal is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatal(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Fatalf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatalf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Skip is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skip(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgYellow).Fprint(w, txt)
 }
 
 // Skipf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skipf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck,gosec // not checking errors when writing to output
+	color.New(color.FgYellow).Fprint(w, txt)
 }
 
 // Helper marks the calling function as a helper function.
