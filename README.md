@@ -17,7 +17,8 @@
 
 This repository contains supplemental packages for [`goyek`](https://github.com/goyek/goyek)
 which mainly offer convenience.
-
+These packages are part of `goyek` but outside the core repository.
+They are developed under looser compatibility than the `goyek` core repository.
 Packages in this repository depend on additional libraries
 and require a newer version of Go than [`goyek`](https://github.com/goyek/goyek).
 See [`go.mod`](go.mod) for details.
@@ -37,11 +38,6 @@ environment variable.
 ## Example
 
 See [build](build) which is this repository's own build pipeline (dogfooding).
-
-## Versioning
-
-This module is versioned using `v0.X.Y` convention
-where `X` is bumped in case of breaking changes.
 
 ## Contributing
 
