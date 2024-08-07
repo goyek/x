@@ -11,8 +11,6 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/goyek/x/build.yml?branch=main)](https://github.com/goyek/x/actions?query=workflow%3Abuild+branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goyek/x)](https://goreportcard.com/report/github.com/goyek/x)
 
-⭐ `Star` this repository if you find it valuable and worth maintaining.
-
 ## Description
 
 This repository contains supplemental packages for [`goyek`](https://github.com/goyek/goyek)
