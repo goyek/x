@@ -1,16 +1,13 @@
-
+package color
 
 import (
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/fatih/color"
-	"github.com/goyek/goyek/v2"
 )
 
 // CodeLineLogger decorates the log with code line information, identation and colors.
