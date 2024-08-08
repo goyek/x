@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
 
+## [Unreleased](https://github.com/goyek/x/compare/v0.1.7...HEAD)
+
+### Added
+
+- Add `color.ReportFlow` which is an extension of `middleware.ReportFlow`.
+
+### Changed
+
+- Bump `github.com/goyek/goyek` to `2.2.0`.
+- Bump `github.com/fatih/color` to `1.17.0`.
+
 ## [0.1.7](https://github.com/goyek/x/releases/tag/v0.1.7) - 2024-01-17
 
 ### Added
