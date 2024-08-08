@@ -36,7 +36,7 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	})
 	goyek.SetDefault(hi)
 
-	// Add middlewares.
+	// Add reporting middlewares.
 	goyek.UseExecutor(middleware.ReportFlow)
 	goyek.Use(middleware.ReportStatus)
 
@@ -57,6 +57,7 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	}
 
 	// Run the tasks.
+	goyek.Use(middleware.BufferParallel)
 	goyek.SetOutput(w)
 	return goyek.Execute(ctx, tasks)
 }
