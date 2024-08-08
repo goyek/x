@@ -35,7 +35,7 @@ func Main() {
 		*v = true // needed to report the task status
 	}
 
-	goyek.UseExecutor(middleware.ReportFlow)
+	goyek.UseExecutor(color.ReportFlow)
 
 	if *dryRun {
 		goyek.Use(middleware.DryRun)
