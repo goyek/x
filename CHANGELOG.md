@@ -11,11 +11,16 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 ### Added
 
 - Add `color.ReportFlow` which is an extension of `middleware.ReportFlow`.
+- Add `otelgoyek.Instrument` which adds OpenTelemetry tracing instrumentation.
 
 ### Changed
 
 - Bump `github.com/goyek/goyek` to `2.2.0`.
 - Bump `github.com/fatih/color` to `1.17.0`.
+
+### Remove
+
+- Drop support for Go 1.17, 1.18, 1.19, 1.20.
 
 ## [0.1.7](https://github.com/goyek/x/releases/tag/v0.1.7) - 2024-01-17
 
