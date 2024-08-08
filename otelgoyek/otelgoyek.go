@@ -17,18 +17,20 @@ const (
 	instrumentationVersion = "0.2.0"
 )
 
-// Instrument adds OpenTelemetry tracing instrumentation to the provided flow.
-func Instrument(flow *goyek.Flow, opts ...Option) error {
+// Middleware returns a [goyek.Middleware] which adds OpenTelemetry tracing instrumentation to task run.
+func Middleware(opts ...Option) goyek.Middleware {
 	cfg := newConfig(opts)
-
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
-
-	e := executor{tracer}
-	flow.UseExecutor(e.Middleware)
-
 	r := runner{tracer}
-	flow.Use(r.Middleware)
-	return nil
+	return r.Middleware
+}
+
+// ExecutorMiddleware returns a [goyek.ExecutorMiddleware] which adds OpenTelemetry tracing instrumentation to flow execution.
+func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
+	cfg := newConfig(opts)
+	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
+	e := executor{tracer}
+	return e.Middleware
 }
 
 type executor struct {
@@ -47,7 +49,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 
 		err := next(in)
 
-		span.SetAttributes(attribute.String("goyek.task.output", sb.String()))
+		span.SetAttributes(attribute.String("goyek.flow.output", sb.String()))
 		if err != nil {
 			span.SetStatus(codes.Error, err.Error())
 		}

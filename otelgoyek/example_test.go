@@ -26,20 +26,6 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 		stop()
 	}()
 
-	// Define a task printing a message and set it as the default task.
-	hi := goyek.Define(goyek.Task{
-		Name:  "hi",
-		Usage: "Greetings",
-		Action: func(a *goyek.A) {
-			a.Log("Hello world!")
-		},
-	})
-	goyek.SetDefault(hi)
-
-	// Add reporting middlewares.
-	goyek.UseExecutor(middleware.ReportFlow)
-	goyek.Use(middleware.ReportStatus)
-
 	// Setup OpenTelemetry tracing pipeline.
 	traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
@@ -51,10 +37,25 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	}()
 	otel.SetTracerProvider(tracerProvider)
 
-	// Add OpenTelemetry instrumentation.
-	if err := otelgoyek.Instrument(goyek.DefaultFlow); err != nil {
-		return err
-	}
+	// Define a task printing a message and set it as the default task.
+	hi := goyek.Define(goyek.Task{
+		Name:  "hi",
+		Usage: "Greetings",
+		Action: func(a *goyek.A) {
+			a.Log("Hello world!")
+		},
+	})
+	goyek.SetDefault(hi)
+
+	// Add OpenTelemetry instrumentation to task run.
+	goyek.Use(otelgoyek.Middleware())
+
+	// Add reporting middlewares.
+	goyek.UseExecutor(middleware.ReportFlow)
+	goyek.Use(middleware.ReportStatus)
+
+	// Add OpenTelemetry instrumentation to flow execution.
+	goyek.UseExecutor(otelgoyek.ExecutorMiddleware())
 
 	// Run the tasks.
 	goyek.Use(middleware.BufferParallel)
@@ -69,30 +70,30 @@ func Example() {
 	}
 
 	/*
-		$ go run .
+				$ go run .
 		===== TASK  hi
-		      main.go:48: Hello world!
+		      main.go:45: Hello world!
 		----- PASS: hi (0.00s)
 		ok      0.000s
 		{
 		        "Name": "hi",
 		        "SpanContext": {
-		                "TraceID": "497952aeb6809b85d78649a5b5a89bea",
-		                "SpanID": "2112975cc8bcc35e",
+		                "TraceID": "e6780df143913b35644a376fd3543ab3",
+		                "SpanID": "afc06d19087b33da",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
 		        },
 		        "Parent": {
-		                "TraceID": "497952aeb6809b85d78649a5b5a89bea",
-		                "SpanID": "fe9c593ffbdd8d60",
+		                "TraceID": "e6780df143913b35644a376fd3543ab3",
+		                "SpanID": "cade09c93a2ba275",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
 		        },
 		        "SpanKind": 1,
-		        "StartTime": "2024-08-08T22:16:49.959429765+02:00",
-		        "EndTime": "2024-08-08T22:16:49.959527765+02:00",
+		        "StartTime": "2024-08-08T23:19:03.304436137+02:00",
+		        "EndTime": "2024-08-08T23:19:03.304525337+02:00",
 		        "Attributes": [
 		                {
 		                        "Key": "goyek.task.name",
@@ -105,7 +106,7 @@ func Example() {
 		                        "Key": "goyek.task.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "===== TASK  hi\n      main.go:48: Hello world!\n----- PASS: hi (0.00s)\n"
+		                                "Value": "      main.go:45: Hello world!\n"
 		                        }
 		                },
 		                {
@@ -165,8 +166,8 @@ func Example() {
 		{
 		        "Name": "Execute",
 		        "SpanContext": {
-		                "TraceID": "497952aeb6809b85d78649a5b5a89bea",
-		                "SpanID": "fe9c593ffbdd8d60",
+		                "TraceID": "e6780df143913b35644a376fd3543ab3",
+		                "SpanID": "cade09c93a2ba275",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
@@ -179,14 +180,14 @@ func Example() {
 		                "Remote": false
 		        },
 		        "SpanKind": 1,
-		        "StartTime": "2024-08-08T22:16:49.959405765+02:00",
-		        "EndTime": "2024-08-08T22:16:49.959535265+02:00",
+		        "StartTime": "2024-08-08T23:19:03.304381737+02:00",
+		        "EndTime": "2024-08-08T23:19:03.304575637+02:00",
 		        "Attributes": [
 		                {
-		                        "Key": "goyek.task.output",
+		                        "Key": "goyek.flow.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "===== TASK  hi\n      main.go:48: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
+		                                "Value": "===== TASK  hi\n      main.go:45: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
 		                        }
 		                }
 		        ],
