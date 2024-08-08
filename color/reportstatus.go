@@ -27,7 +27,7 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		status := "PASS"
 		switch res.Status {
 		case goyek.StatusFailed:
-			c = color.New(color.FgRed, color.Bold)
+			c = color.New(color.FgRed)
 			status = "FAIL"
 		case goyek.StatusSkipped:
 			c = color.New(color.FgYellow)
