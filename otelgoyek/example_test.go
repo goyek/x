@@ -70,7 +70,7 @@ func Example() {
 	}
 
 	/*
-				$ go run .
+		$ go run .
 		===== TASK  hi
 		      main.go:45: Hello world!
 		----- PASS: hi (0.00s)
@@ -78,22 +78,22 @@ func Example() {
 		{
 		        "Name": "hi",
 		        "SpanContext": {
-		                "TraceID": "e6780df143913b35644a376fd3543ab3",
-		                "SpanID": "afc06d19087b33da",
+		                "TraceID": "c6e535658cb43357c4188eb87cbcd844",
+		                "SpanID": "33afad8f183e2955",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
 		        },
 		        "Parent": {
-		                "TraceID": "e6780df143913b35644a376fd3543ab3",
-		                "SpanID": "cade09c93a2ba275",
+		                "TraceID": "c6e535658cb43357c4188eb87cbcd844",
+		                "SpanID": "6ea000e83a2029a9",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
 		        },
 		        "SpanKind": 1,
-		        "StartTime": "2024-08-08T23:19:03.304436137+02:00",
-		        "EndTime": "2024-08-08T23:19:03.304525337+02:00",
+		        "StartTime": "2024-08-09T09:02:58.883480983+02:00",
+		        "EndTime": "2024-08-09T09:02:58.883500285+02:00",
 		        "Attributes": [
 		                {
 		                        "Key": "goyek.task.name",
@@ -132,7 +132,7 @@ func Example() {
 		                        "Key": "service.name",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "unknown_service:main"
+		                                "Value": "unknown_service:x"
 		                        }
 		                },
 		                {
@@ -166,8 +166,8 @@ func Example() {
 		{
 		        "Name": "Execute",
 		        "SpanContext": {
-		                "TraceID": "e6780df143913b35644a376fd3543ab3",
-		                "SpanID": "cade09c93a2ba275",
+		                "TraceID": "c6e535658cb43357c4188eb87cbcd844",
+		                "SpanID": "6ea000e83a2029a9",
 		                "TraceFlags": "01",
 		                "TraceState": "",
 		                "Remote": false
@@ -180,9 +180,30 @@ func Example() {
 		                "Remote": false
 		        },
 		        "SpanKind": 1,
-		        "StartTime": "2024-08-08T23:19:03.304381737+02:00",
-		        "EndTime": "2024-08-08T23:19:03.304575637+02:00",
+		        "StartTime": "2024-08-09T09:02:58.88343108+02:00",
+		        "EndTime": "2024-08-09T09:02:58.883508185+02:00",
 		        "Attributes": [
+		                {
+		                        "Key": "goyek.flow.tasks",
+		                        "Value": {
+		                                "Type": "STRINGSLICE",
+		                                "Value": []
+		                        }
+		                },
+		                {
+		                        "Key": "goyek.flow.skip_tasks",
+		                        "Value": {
+		                                "Type": "STRINGSLICE",
+		                                "Value": []
+		                        }
+		                },
+		                {
+		                        "Key": "goyek.flow.no_deps",
+		                        "Value": {
+		                                "Type": "BOOL",
+		                                "Value": false
+		                        }
+		                },
 		                {
 		                        "Key": "goyek.flow.output",
 		                        "Value": {
@@ -206,7 +227,7 @@ func Example() {
 		                        "Key": "service.name",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "unknown_service:main"
+		                                "Value": "unknown_service:x"
 		                        }
 		                },
 		                {

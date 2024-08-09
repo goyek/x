@@ -41,7 +41,11 @@ type executor struct {
 
 func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 	return func(in goyek.ExecuteInput) error {
-		ctx, span := e.tracer.Start(in.Context, "Execute")
+		ctx, span := e.tracer.Start(in.Context, "Execute", trace.WithAttributes(
+			attribute.StringSlice("goyek.flow.tasks", in.Tasks),
+			attribute.StringSlice("goyek.flow.skip_tasks", in.SkipTasks),
+			attribute.Bool("goyek.flow.no_deps", in.NoDeps),
+		))
 		defer span.End()
 
 		in.Context = ctx
@@ -65,8 +69,9 @@ type runner struct {
 
 func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 	return func(in goyek.Input) goyek.Result {
-		ctx, span := r.tracer.Start(in.Context, in.TaskName,
-			trace.WithAttributes(attribute.String("goyek.task.name", in.TaskName)))
+		ctx, span := r.tracer.Start(in.Context, in.TaskName, trace.WithAttributes(
+			attribute.String("goyek.task.name", in.TaskName),
+		))
 		defer span.End()
 
 		in.Context = ctx
