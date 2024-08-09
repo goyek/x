@@ -32,7 +32,7 @@ The repository contains basic confiugration for
 
 1. Update `instrumentationVersion` value in [otelgoyek/otelgoyek.go](otelgoyek/otelgoyek.go).
 
-1. Update [CHANGELOG.md](CHANGELOG.md) with new the new release.
+1. Update [CHANGELOG.md](CHANGELOG.md) with the new release.
 
 1. Push the changes and create a Pull Request on GitHub named `Release <version>`.
 

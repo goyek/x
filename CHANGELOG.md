@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
 
-## [Unreleased](https://github.com/goyek/x/compare/v0.1.7...HEAD)
+## [0.2.0](https://github.com/goyek/x\/releases/tag/v0.2.0) - 2024-08-09
 
 ### Added
 

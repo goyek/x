@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/fatih/color v1.17.0
-	github.com/goyek/goyek/v2 v2.1.1-0.20240808114255-c272ab00f730
+	github.com/goyek/goyek/v2 v2.2.0
 	github.com/mattn/go-shellwords v1.0.12
 	go.opentelemetry.io/otel v1.28.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.28.0
