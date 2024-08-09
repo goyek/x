@@ -50,15 +50,15 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	// Add OpenTelemetry instrumentation to task run.
 	goyek.Use(otelgoyek.Middleware())
 
-	// Add reporting middlewares.
+	// Add common middlewares.
 	goyek.UseExecutor(middleware.ReportFlow)
 	goyek.Use(middleware.ReportStatus)
+	goyek.Use(middleware.BufferParallel)
 
 	// Add OpenTelemetry instrumentation to flow execution.
 	goyek.UseExecutor(otelgoyek.ExecutorMiddleware())
 
 	// Run the tasks.
-	goyek.Use(middleware.BufferParallel)
 	goyek.SetOutput(w)
 	return goyek.Execute(ctx, tasks)
 }
