@@ -30,11 +30,11 @@ The repository contains basic confiugration for
 
 ### Pre-release
 
-Create a pull request named `Release <version>` to update the [`CHANGELOG.md`](CHANGELOG.md):
+1. Update `instrumentationVersion` value in [otelgoyek/otelgoyek.go](otelgoyek/otelgoyek.go).
 
-- Change the `Unreleased` header to represent the new release.
-- Consider adding a description for the new release.
-  Especially if it adds new features or introduces breaking changes.
+1. Update [CHANGELOG.md](CHANGELOG.md) with new the new release.
+
+1. Push the changes and create a Pull Request on GitHub named `Release <version>`.
 
 ### Release
 
