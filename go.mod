@@ -3,7 +3,7 @@ module github.com/goyek/x
 go 1.22
 
 require (
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/goyek/goyek/v2 v2.2.0
 	github.com/mattn/go-shellwords v1.0.12
 	go.opentelemetry.io/otel v1.32.0
