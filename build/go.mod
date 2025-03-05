@@ -7,7 +7,7 @@ replace github.com/goyek/x => ../
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.62.2
-	github.com/goyek/goyek/v2 v2.2.0
+	github.com/goyek/goyek/v2 v2.3.0
 	github.com/goyek/x v0.0.0-00010101000000-000000000000
 )
 
