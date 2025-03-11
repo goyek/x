@@ -25,11 +25,11 @@ linters:
   disable-all: true
   enable:
     - asasalint
+    - copyloopvar
     - dogsled
     - dupl
     - dupword
     - errcheck
-    - exportloopref
     - funlen
     - gocritic
     - goconst
