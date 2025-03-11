@@ -1,7 +1,6 @@
 module github.com/goyek/x/build
 
-go 1.22.1
-toolchain go1.23.7
+go 1.24.0
 
 replace github.com/goyek/x => ../
 
