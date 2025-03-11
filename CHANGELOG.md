@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
 
-## [0.2.0](https://github.com/goyek/x\/releases/tag/v0.2.0) - 2024-08-09
+## [0.3.0](https://github.com/goyek/x/releases/tag/v0.3.0) - 2025-03-11
+
+### Changed
+
+- Bump dependencies.
+
+### Remove
+
+- Drop support for Go 1.21.
+
+## [0.2.0](https://github.com/goyek/x/releases/tag/v0.2.0) - 2024-08-09
 
 ### Added
 
@@ -23,7 +33,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 - Drop support for Go 1.17, 1.18, 1.19, 1.20.
 
-## [0.1.7](https://github.com/goyek/x\/releases/tag/v0.1.7) - 2024-01-17
+## [0.1.7](https://github.com/goyek/x/releases/tag/v0.1.7) - 2024-01-17
 
 ### Added
 
