@@ -6,10 +6,10 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/goyek/goyek/v2 v2.3.0
 	github.com/mattn/go-shellwords v1.0.12
-	go.opentelemetry.io/otel v1.35.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.35.0
-	go.opentelemetry.io/otel/sdk v1.35.0
-	go.opentelemetry.io/otel/trace v1.35.0
+	go.opentelemetry.io/otel v1.36.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.36.0
+	go.opentelemetry.io/otel/sdk v1.36.0
+	go.opentelemetry.io/otel/trace v1.36.0
 )
 
 require (
