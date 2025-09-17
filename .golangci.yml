@@ -30,28 +30,28 @@ linters:
     - unused
     - whitespace
 
-settings:
-  funlen:
-    lines: 100
-    statements: 50
-  gocyclo:
-    min-complexity: 15
-  gosec:
-    excludes:
-      - G104
-  govet:
-    disable:
-      - fieldalignment
-      - nilness
-    enable-all: true
-  misspell:
-    locale: US
-  nolintlint:
-    require-explanation: true # require an explanation for nolint directives
-    require-specific: true # require nolint directives to be specific about which linter is being skipped
-    allow-unused: false # report any unused nolint directives
-  revive:
-    confidence: 0
+  settings:
+    funlen:
+      lines: 100
+      statements: 50
+    gocyclo:
+      min-complexity: 15
+    gosec:
+      excludes:
+        - G104
+    govet:
+      disable:
+        - fieldalignment
+        - nilness
+      enable-all: true
+    misspell:
+      locale: US
+    nolintlint:
+      require-explanation: true # require an explanation for nolint directives
+      require-specific: true # require nolint directives to be specific about which linter is being skipped
+      allow-unused: false # report any unused nolint directives
+    revive:
+      confidence: 0
 
   exclusions:
     generated: lax
@@ -59,7 +59,7 @@ settings:
       - std-error-handling
     rules:
       # Exclude some linters from running on tests files.
-      - path: _test\.go
+      - path: _test.go
         linters:
           - funlen
 
