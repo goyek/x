@@ -53,15 +53,15 @@ settings:
   revive:
     confidence: 0
 
-exclusions:
-  generated: lax
-  presets:
-    - std-error-handling
-  rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - funlen
+  exclusions:
+    generated: lax
+    presets:
+      - std-error-handling
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - funlen
 
 formatters:
   enable:

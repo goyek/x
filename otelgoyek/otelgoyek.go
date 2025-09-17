@@ -95,7 +95,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 				span.SetAttributes(attribute.String("goyek.task.panic.value", "panic(nil) or runtime.Goexit() called"))
 			}
 
-			span.SetAttributes(attribute.String("goyek.task.panic.stack", fmt.Sprint(string(res.PanicStack))))
+			span.SetAttributes(attribute.String("goyek.task.panic.stack", string(res.PanicStack)))
 		}
 
 		return res
