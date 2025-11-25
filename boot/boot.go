@@ -5,6 +5,7 @@ package boot
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 
 	"github.com/goyek/x/color"
 )
+
+const exitCodeInvalid = 2
 
 // Reusable flags used by the build pipeline.
 var (
@@ -27,9 +30,13 @@ var (
 // Main is an extension of goyek.Main which additionally
 // defines flags and uses the most useful middlewares.
 func Main() {
+	tasks, args := goyek.SplitTasks(os.Args[1:])
 	flag.CommandLine.SetOutput(goyek.Output())
 	flag.Usage = usage
-	flag.Parse()
+	if err := flag.CommandLine.Parse(args); err != nil {
+		fmt.Fprintln(goyek.Output(), err)
+		os.Exit(exitCodeInvalid)
+	}
 
 	if *dryRun {
 		*v = true // needed to report the task status
@@ -64,11 +71,11 @@ func Main() {
 
 	goyek.SetUsage(usage)
 	goyek.SetLogger(&color.CodeLineLogger{})
-	goyek.Main(flag.Args(), opts...)
+	goyek.Main(tasks, opts...)
 }
 
 func usage() {
-	fmt.Println("Usage of build: [flags] [--] [tasks]")
+	fmt.Println("Usage of build: [tasks] [flags] [--] [args]")
 	goyek.Print()
 	fmt.Println("Flags:")
 	flag.PrintDefaults()

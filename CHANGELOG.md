@@ -10,8 +10,10 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ### Changed
 
+- **BREAKING**: Change `boot.Main` command line syntax from `[flags] [--] [tasks]`
+  to `[tasks] [flags] [--] [args]` to align with `goyek` v3 recommendation.
 - Bump `github.com/goyek/goyek` to `3.0.0`.
-- Bump dependencies.
+- Bump other dependencies.
 
 ### Remove
 
