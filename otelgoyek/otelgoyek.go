@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/goyek/goyek/v2"
+	"github.com/goyek/goyek/v3"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
