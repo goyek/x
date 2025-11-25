@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/goyek/goyek/v2"
-	"github.com/goyek/goyek/v2/middleware"
+	"github.com/goyek/goyek/v3"
+	"github.com/goyek/goyek/v3/middleware"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/trace"

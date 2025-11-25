@@ -19,7 +19,7 @@ and require a newer version of Go than [`goyek`](https://github.com/goyek/goyek)
 See [`go.mod`](go.mod) for details.
 
 Package [`boot`](https://pkg.go.dev/github.com/goyek/x/boot)
-contains an extension of [`Flow.Main`](https://pkg.go.dev/github.com/goyek/goyek/v2#Main)
+contains an extension of [`Flow.Main`](https://pkg.go.dev/github.com/goyek/goyek/v3#Main)
 which additionally defines flags and configures the flow in a convenient way.
 
 Package [`cmd`](https://pkg.go.dev/github.com/goyek/x/cmd)
