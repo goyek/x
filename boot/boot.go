@@ -37,15 +37,7 @@ var (
 //
 // The command line syntax is: [tasks] [flags] [--] [args]
 //
-// To add custom flags, define them before calling Main:
-//
-//	var customFlag = flag.String("custom", "", "custom flag")
-//
-//	func main() {
-//		// Define your tasks here
-//		boot.Main()
-//		// Access *customFlag after Main returns
-//	}
+// To add custom flags, define them before calling Main (see the example).
 func Main() {
 	tasks, args := goyek.SplitTasks(os.Args[1:])
 	flag.CommandLine.SetOutput(goyek.Output())
