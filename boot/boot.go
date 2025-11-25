@@ -27,8 +27,25 @@ var (
 	noColor = flag.Bool("no-color", false, "disable colorizing output")
 )
 
-// Main is an extension of goyek.Main which additionally
-// defines flags and uses the most useful middlewares.
+// Main is an extension of goyek.Main which additionally defines reusable flags
+// and configures the flow with the most useful middlewares.
+//
+// It automatically sets up:
+//   - Colored output via [color.ReportFlow] and [color.ReportStatus]
+//   - Standard middlewares ([middleware.BufferParallel], [middleware.SilentNonFailed], [middleware.ReportLongRun])
+//   - Command line flags for common options (-v, -dry-run, -long-run, etc.)
+//
+// The command line syntax is: [tasks] [flags] [--] [args]
+//
+// To add custom flags, define them before calling Main:
+//
+//	var customFlag = flag.String("custom", "", "custom flag")
+//
+//	func main() {
+//		// Define your tasks here
+//		boot.Main()
+//		// Access *customFlag after Main returns
+//	}
 func Main() {
 	tasks, args := goyek.SplitTasks(os.Args[1:])
 	flag.CommandLine.SetOutput(goyek.Output())
