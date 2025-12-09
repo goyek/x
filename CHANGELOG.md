@@ -8,7 +8,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ## [Unreleased](https://github.com/goyek/x/compare/v0.4.0...HEAD)
 
-### Remove
+### Removed
 
 - Drop support for Go 1.23.
 
@@ -21,7 +21,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 - Bump `github.com/goyek/goyek` to `3.0.0`.
 - Bump other dependencies.
 
-### Remove
+### Removed
 
 - Drop support for Go 1.22.
 
@@ -31,7 +31,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 - Bump dependencies.
 
-### Remove
+### Removed
 
 - Drop support for Go 1.21.
 
@@ -48,7 +48,7 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 - Bump `github.com/goyek/goyek` to `2.2.0`.
 - Bump `github.com/fatih/color` to `1.17.0`.
 
-### Remove
+### Removed
 
 - Drop support for Go 1.17, 1.18, 1.19, 1.20.
 
