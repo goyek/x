@@ -25,6 +25,9 @@ which additionally defines flags and configures the flow in a convenient way.
 Package [`cmd`](https://pkg.go.dev/github.com/goyek/x/cmd)
 offers functions for running programs in a Shell-like way.
 
+Package [`graphviz`](https://pkg.go.dev/github.com/goyek/x/graphviz)
+visualizes a dependency graph with registered tasks.
+
 Package [`color`](https://pkg.go.dev/github.com/goyek/x/color)
 contains goyek features which additionally have colors.
 The package supports the [`NO_COLOR`](https://no-color.org/)
