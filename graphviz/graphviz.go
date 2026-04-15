@@ -14,6 +14,12 @@ type Option interface {
 	apply(*config)
 }
 
+type optionFunc func(*config)
+
+func (fn optionFunc) apply(cfg *config) {
+	fn(cfg)
+}
+
 type config struct {
 }
 
