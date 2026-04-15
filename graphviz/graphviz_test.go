@@ -51,6 +51,20 @@ func TestDraw(t *testing.T) {
 		}
 	})
 
+	t.Run("task with usage", func(t *testing.T) {
+		f := &goyek.Flow{}
+		f.Define(goyek.Task{Name: "build", Usage: "compiles the code"})
+		sb := &strings.Builder{}
+		err := graphviz.Draw(sb, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := sb.String()
+		if !strings.Contains(got, "  \"build\" [tooltip=\"compiles the code\"];\n") {
+			t.Errorf("missing tooltip, got:\n%s", got)
+		}
+	})
+
 	t.Run("task with dependencies", func(t *testing.T) {
 		f := &goyek.Flow{}
 		test := f.Define(goyek.Task{Name: "test"})

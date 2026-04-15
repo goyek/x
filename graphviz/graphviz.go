@@ -36,8 +36,14 @@ func Draw(w io.Writer, flow *goyek.Flow, opts ...Option) error {
 	}
 
 	for _, task := range flow.Tasks() {
-		if _, err := fmt.Fprintf(w, "  %q;\n", task.Name()); err != nil {
-			return err
+		if usage := task.Usage(); usage != "" {
+			if _, err := fmt.Fprintf(w, "  %q [tooltip=%q];\n", task.Name(), usage); err != nil {
+				return err
+			}
+		} else {
+			if _, err := fmt.Fprintf(w, "  %q;\n", task.Name()); err != nil {
+				return err
+			}
 		}
 		for _, dep := range task.Deps() {
 			if _, err := fmt.Fprintf(w, "  %q -> %q;\n", task.Name(), dep.Name()); err != nil {

@@ -25,8 +25,8 @@ func ExampleDraw() {
 
 	// Output:
 	// digraph G {
-	//   "all";
+	//   "all" [tooltip="run all tasks"];
 	//   "all" -> "test";
-	//   "test";
+	//   "test" [tooltip="run tests"];
 	// }
 }
