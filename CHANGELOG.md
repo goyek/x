@@ -8,6 +8,13 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ## [Unreleased](https://github.com/goyek/x/compare/v0.4.0...HEAD)
 
+### Added
+
+- Add `graphviz.Draw` function which visualizes a dependency graph
+  with registered tasks.
+- Add `-graph` flag to `boot.Main` to output the task dependency graph
+  in DOT format.
+
 ### Removed
 
 - Drop support for Go 1.23.

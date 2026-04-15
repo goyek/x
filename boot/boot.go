@@ -13,6 +13,7 @@ import (
 	"github.com/goyek/goyek/v3/middleware"
 
 	"github.com/goyek/x/color"
+	"github.com/goyek/x/graphviz"
 )
 
 const exitCodeInvalid = 2
@@ -25,6 +26,7 @@ var (
 	noDeps  = flag.Bool("no-deps", false, "do not process dependencies")
 	skip    = flag.String("skip", "", "skip processing the `comma-separated tasks`")
 	noColor = flag.Bool("no-color", false, "disable colorizing output")
+	graph   = flag.Bool("graph", false, "output the task dependency graph in DOT format and exit")
 )
 
 // Main is an extension of goyek.Main which additionally defines reusable flags
@@ -45,6 +47,14 @@ func Main() {
 	if err := flag.CommandLine.Parse(args); err != nil {
 		fmt.Fprintln(goyek.Output(), err)
 		os.Exit(exitCodeInvalid)
+	}
+
+	if *graph {
+		if err := graphviz.Draw(goyek.Output(), goyek.DefaultFlow); err != nil {
+			fmt.Fprintln(goyek.Output(), err)
+			os.Exit(1)
+		}
+		os.Exit(0)
 	}
 
 	if *dryRun {
