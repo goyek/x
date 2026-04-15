@@ -10,7 +10,8 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ### Added
 
-- Add `graphviz.Draw` function which visualizes a dependency graph with registered tasks.
+- Add `graphviz.Draw` function which visualizes a dependency graph with
+  registered tasks.
 
 ### Removed
 
