@@ -8,6 +8,10 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ## [Unreleased](https://github.com/goyek/x/compare/v0.4.0...HEAD)
 
+### Added
+
+- Add `graphviz.Draw` function which visualizes a dependency graph with registered tasks.
+
 ### Removed
 
 - Drop support for Go 1.23.
