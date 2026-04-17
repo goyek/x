@@ -30,6 +30,9 @@ contains goyek features which additionally have colors.
 The package supports the [`NO_COLOR`](https://no-color.org/)
 environment variable.
 
+Package [`graphviz`](https://pkg.go.dev/github.com/goyek/x/graphviz)
+visualizes a dependency graph with registered tasks.
+
 Package [`otelgoyek`](https://pkg.go.dev/github.com/goyek/x/otelgoyek)
 provides OpenTelemetry instrumentation for goyek.
 
