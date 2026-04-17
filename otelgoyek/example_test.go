@@ -153,7 +153,7 @@ func Example() {
 		                        "Key": "telemetry.sdk.version",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "1.28.0"
+		                                "Value": "1.43.0"
 		                        }
 		                }
 		        ],
@@ -248,7 +248,7 @@ func Example() {
 		                        "Key": "telemetry.sdk.version",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "1.28.0"
+		                                "Value": "1.43.0"
 		                        }
 		                }
 		        ],
