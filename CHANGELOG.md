@@ -15,6 +15,10 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 - Add `-graph` flag to `boot.Main` to output the task dependency graph
   in DOT format.
 
+### Security
+
+- Redact environment variable values from logs in `cmd.Env`.
+
 ### Removed
 
 - Drop support for Go 1.23.
