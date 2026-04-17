@@ -58,8 +58,8 @@ func Dir(s string) Option {
 func Env(k, v string) Option {
 	return func(a *goyek.A, cmd *exec.Cmd) {
 		a.Helper()
+		a.Log("Env: ", k)
 		env := k + "=" + v
-		a.Log("Env: ", env)
 		cmd.Env = append(cmd.Env, env)
 	}
 }
