@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/goyek/goyek/v3"
 	"github.com/mattn/go-shellwords"
@@ -37,7 +38,21 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		opt(a, cmd)
 	}
 
-	a.Log("Exec: ", cmdLine)
+	var sb strings.Builder
+	sb.WriteString("Exec:")
+	for _, env := range envs {
+		if k, _, ok := strings.Cut(env, "="); ok {
+			sb.WriteString(" ")
+			sb.WriteString(k)
+			sb.WriteString("=[REDACTED]")
+		}
+	}
+	for _, arg := range args {
+		sb.WriteString(" ")
+		sb.WriteString(arg)
+	}
+	a.Log(sb.String())
+
 	if err := cmd.Run(); err != nil {
 		a.Error(err)
 		return false

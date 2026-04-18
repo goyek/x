@@ -48,3 +48,40 @@ func TestEnvLogging(t *testing.T) {
 		t.Errorf("Env key was not logged: %s", got)
 	}
 }
+
+func TestExecLoggingRedaction(t *testing.T) {
+	sb := &strings.Builder{}
+
+	mw := func(next goyek.Runner) goyek.Runner {
+		return func(in goyek.Input) goyek.Result {
+			in.Output = io.MultiWriter(in.Output, sb)
+			return next(in)
+		}
+	}
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "PASSWORD=secret go version")
+		},
+	})
+
+	oldFlow := goyek.DefaultFlow
+	defer func() { goyek.DefaultFlow = oldFlow }()
+	goyek.DefaultFlow = f
+	goyek.Use(mw)
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := sb.String()
+	if strings.Contains(got, "secret") {
+		t.Errorf("Secret value was logged: %s", got)
+	}
+	if !strings.Contains(got, "PASSWORD=[REDACTED]") {
+		t.Errorf("Env key was not logged with [REDACTED]: %s", got)
+	}
+	if !strings.Contains(got, "go version") {
+		t.Errorf("Command was not logged: %s", got)
+	}
+}
