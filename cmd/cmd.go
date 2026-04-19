@@ -41,7 +41,7 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 	var sb strings.Builder
 	sb.WriteString("Exec: ")
 	for _, env := range envs {
-		split := strings.SplitN(env, "=", 2)
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // it is used to split key and value
 		sb.WriteString(split[0])
 		sb.WriteString("=[REDACTED] ")
 	}

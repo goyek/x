@@ -14,8 +14,7 @@ type Option interface {
 	apply(*config)
 }
 
-type config struct {
-}
+type config struct{}
 
 // Draw visualizes a dependency graph with registered tasks in DOT format.
 func Draw(w io.Writer, flow *goyek.Flow, opts ...Option) error {
