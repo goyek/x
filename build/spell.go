@@ -12,6 +12,7 @@ var spell = goyek.Define(goyek.Task{
 	Name:  "spell",
 	Usage: "misspell",
 	Action: func(a *goyek.A) {
+		a.Log("go install misspell")
 		if !cmd.Exec(a, "go install github.com/client9/misspell/cmd/misspell", cmd.Dir(dirBuild)) {
 			return
 		}
@@ -19,6 +20,8 @@ var spell = goyek.Define(goyek.Task{
 		if len(mdFiles) == 0 {
 			a.Skip("no .md files")
 		}
-		cmd.Exec(a, "misspell -error -locale=US -w "+strings.Join(mdFiles, " "))
+		cmdLine := "misspell -error -locale=US -w " + strings.Join(mdFiles, " ")
+		a.Log(cmdLine)
+		cmd.Exec(a, cmdLine)
 	},
 })

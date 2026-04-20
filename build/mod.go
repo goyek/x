@@ -10,7 +10,9 @@ var mod = goyek.Define(goyek.Task{
 	Name:  "mod",
 	Usage: "go mod tidy",
 	Action: func(a *goyek.A) {
+		a.Log("go mod tidy")
 		cmd.Exec(a, "go mod tidy", cmd.Dir(dirRoot))
+		a.Log("go mod tidy")
 		cmd.Exec(a, "go mod tidy", cmd.Dir(dirBuild))
 	},
 })

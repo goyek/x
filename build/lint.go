@@ -10,10 +10,13 @@ var lint = goyek.Define(goyek.Task{
 	Name:  "lint",
 	Usage: "golangci-lint run --fix",
 	Action: func(a *goyek.A) {
+		a.Log("go install golangci-lint")
 		if !cmd.Exec(a, "go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint", cmd.Dir(dirBuild)) {
 			return
 		}
+		a.Log("golangci-lint run --fix")
 		cmd.Exec(a, "golangci-lint run --fix", cmd.Dir(dirRoot))
+		a.Log("golangci-lint run --fix")
 		cmd.Exec(a, "golangci-lint run --fix", cmd.Dir(dirBuild))
 	},
 })

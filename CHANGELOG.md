@@ -17,7 +17,8 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ### Changed
 
-- Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive information leakage.
+- Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
+  information leakage.
 
 ### Removed
 
@@ -131,6 +132,12 @@ This release primarily adds the `boot.Main` and `cmd.Exec` functions.
 {
   "MD024": {
     "siblings_only": true
+  },
+  "MD013": {
+    "line_length": 80,
+    "code_blocks": false,
+    "tables": false,
+    "headings": false
   }
 }
 -->

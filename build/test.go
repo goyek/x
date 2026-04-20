@@ -10,9 +10,13 @@ var test = goyek.Define(goyek.Task{
 	Name:  "test",
 	Usage: "go test",
 	Action: func(a *goyek.A) {
-		if !cmd.Exec(a, "go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...") {
+		cmdLine := "go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./..."
+		a.Log(cmdLine)
+		if !cmd.Exec(a, cmdLine) {
 			return
 		}
-		cmd.Exec(a, "go tool cover -html=coverage.out -o coverage.html")
+		cmdLine = "go tool cover -html=coverage.out -o coverage.html"
+		a.Log(cmdLine)
+		cmd.Exec(a, cmdLine)
 	},
 })
