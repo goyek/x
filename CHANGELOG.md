@@ -3,8 +3,9 @@
 All notable changes to this library are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this library adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-as well as to [Module version numbering](https://go.dev/doc/modules/version-numbers).
+and this library adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html) as well as to
+[Module version numbering](https://go.dev/doc/modules/version-numbers).
 
 ## [Unreleased](https://github.com/goyek/x/compare/v0.4.0...HEAD)
 
@@ -28,8 +29,9 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 
 ### Changed
 
-- **BREAKING**: Change `boot.Main` command line syntax from `[flags] [--] [tasks]`
-  to `[tasks] [flags] [--] [args]` to align with `goyek` v3 recommendation.
+- **BREAKING**: Change `boot.Main` command line syntax from
+  `[flags] [--] [tasks]` to `[tasks] [flags] [--] [args]` to align with
+  `goyek` v3 recommendation.
 - Bump `github.com/goyek/goyek` to `3.0.0`.
 - Bump other dependencies.
 
@@ -132,12 +134,6 @@ This release primarily adds the `boot.Main` and `cmd.Exec` functions.
 {
   "MD024": {
     "siblings_only": true
-  },
-  "MD013": {
-    "line_length": 80,
-    "code_blocks": false,
-    "tables": false,
-    "headings": false
   }
 }
 -->
