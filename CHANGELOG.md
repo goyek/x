@@ -15,9 +15,9 @@ as well as to [Module version numbering](https://go.dev/doc/modules/version-numb
 - Add `-graph` flag to `boot.Main` to output the task dependency graph
   in DOT format.
 
-### Security
+### Changed
 
-- Redact environment variable values from logs in `cmd.Env`.
+- Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive information leakage.
 
 ### Removed
 
