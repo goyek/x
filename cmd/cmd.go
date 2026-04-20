@@ -40,7 +40,7 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 
 	parts := make([]string, 0, len(envs)+len(args))
 	for _, env := range envs {
-		split := strings.SplitN(env, "=", 2) //nolint:mnd
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // split into key and value
 		parts = append(parts, split[0]+"=[REDACTED]")
 	}
 	parts = append(parts, args...)

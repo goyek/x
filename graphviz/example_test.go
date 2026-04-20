@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/goyek/goyek/v3"
+
 	"github.com/goyek/x/graphviz"
 )
 
