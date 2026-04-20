@@ -2,17 +2,13 @@ package main
 
 import (
 	"github.com/goyek/goyek/v3"
-
-	"github.com/goyek/x/cmd"
 )
 
 var mod = goyek.Define(goyek.Task{
 	Name:  "mod",
 	Usage: "go mod tidy",
 	Action: func(a *goyek.A) {
-		a.Log("go mod tidy")
-		cmd.Exec(a, "go mod tidy", cmd.Dir(dirRoot))
-		a.Log("go mod tidy")
-		cmd.Exec(a, "go mod tidy", cmd.Dir(dirBuild))
+		runExec(a, "go mod tidy", runDir(a, dirRoot))
+		runExec(a, "go mod tidy", runDir(a, dirBuild))
 	},
 })
