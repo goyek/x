@@ -10,7 +10,7 @@ import (
 	"github.com/goyek/goyek/v3"
 )
 
-func TestEnvLogging(t *testing.T) {
+func TestLogging_Security(t *testing.T) {
 	sb := &strings.Builder{}
 
 	mw := func(next goyek.Runner) goyek.Runner {
@@ -25,13 +25,9 @@ func TestEnvLogging(t *testing.T) {
 		Name: "test",
 		Action: func(a *goyek.A) {
 			Env("SECRET_KEY", "very-sensitive-value")(a, &exec.Cmd{})
+			Exec(a, "SECRET=password echo hello")
 		},
 	})
-
-	// Use the middleware to capture output
-	// goyek.Use is global, but Flow might have its own?
-	// Actually goyek.Use affects DefaultFlow.
-	// For a custom Flow, we might need another way or just use DefaultFlow.
 
 	oldFlow := goyek.DefaultFlow
 	defer func() { goyek.DefaultFlow = oldFlow }()
@@ -42,9 +38,15 @@ func TestEnvLogging(t *testing.T) {
 
 	got := sb.String()
 	if strings.Contains(got, "very-sensitive-value") {
-		t.Errorf("Secret value was logged: %s", got)
+		t.Errorf("Secret value from Env was logged: %s", got)
 	}
-	if !strings.Contains(got, "SECRET_KEY") {
-		t.Errorf("Env key was not logged: %s", got)
+	if strings.Contains(got, "SECRET_KEY") {
+		t.Errorf("Env key was logged: %s", got)
+	}
+	if strings.Contains(got, "password") {
+		t.Errorf("Secret value from Exec was logged: %s", got)
+	}
+	if strings.Contains(got, "SECRET=") {
+		t.Errorf("Inline secret was logged: %s", got)
 	}
 }

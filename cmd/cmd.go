@@ -37,7 +37,6 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		opt(a, cmd)
 	}
 
-	a.Log("Exec: ", cmdLine)
 	if err := cmd.Run(); err != nil {
 		a.Error(err)
 		return false
@@ -47,18 +46,14 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 
 // Dir is an option to set the working directory.
 func Dir(s string) Option {
-	return func(a *goyek.A, cmd *exec.Cmd) {
-		a.Helper()
-		a.Log("Work dir: ", s)
+	return func(_ *goyek.A, cmd *exec.Cmd) {
 		cmd.Dir = s
 	}
 }
 
 // Env is an option to set an environment variable.
 func Env(k, v string) Option {
-	return func(a *goyek.A, cmd *exec.Cmd) {
-		a.Helper()
-		a.Log("Env: ", k)
+	return func(_ *goyek.A, cmd *exec.Cmd) {
 		env := k + "=" + v
 		cmd.Env = append(cmd.Env, env)
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goyek/goyek/v3"
+
 	"github.com/goyek/x/graphviz"
 )
 
