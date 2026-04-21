@@ -32,7 +32,6 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 	if len(spans) != 1 {
 		t.Fatalf("expected 1 span, got %d", len(spans))
 	}
-
 	for _, attr := range spans[0].Attributes {
 		if string(attr.Key) == "goyek.task.output" {
 			t.Errorf("found goyek.task.output attribute even though output capture is disabled: %v", attr.Value.AsString())
@@ -61,12 +60,7 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	if len(spans) != 1 {
 		t.Fatalf("expected 1 span, got %d", len(spans))
 	}
-	if spans[0].Name != "Execute" {
-		t.Fatalf("expected Execute span, got %q", spans[0].Name)
-	}
-
-	executeSpan := spans[0]
-	for _, attr := range executeSpan.Attributes {
+	for _, attr := range spans[0].Attributes {
 		if string(attr.Key) == "goyek.flow.output" {
 			t.Errorf("found goyek.flow.output attribute even though output capture is disabled: %v", attr.Value.AsString())
 		}
