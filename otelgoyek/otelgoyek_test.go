@@ -58,20 +58,14 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	_ = f.Execute(context.Background(), []string{"test"})
 
 	spans := exp.GetSpans()
-	// Usually 1 for Execute, but if we don't use runner middleware, it's just 1.
-	// Actually Execute span will be there.
-	var executeSpan *tracetest.SpanStub
-	for _, s := range spans {
-		if s.Name == "Execute" {
-			executeSpan = &s
-			break
-		}
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	if spans[0].Name != "Execute" {
+		t.Fatalf("expected Execute span, got %q", spans[0].Name)
 	}
 
-	if executeSpan == nil {
-		t.Fatal("Execute span not found")
-	}
-
+	executeSpan := spans[0]
 	for _, attr := range executeSpan.Attributes {
 		if string(attr.Key) == "goyek.flow.output" {
 			t.Errorf("found goyek.flow.output attribute even though output capture is disabled: %v", attr.Value.AsString())

@@ -42,7 +42,7 @@ func WithTracerProvider(provider trace.TracerProvider) Option {
 	})
 }
 
-// WithDisableOutput specifies if the output should not be captured in the span attributes.
+// WithDisableOutput disables capturing output in the span attributes.
 // This is useful for security reasons, to avoid sensitive data exposure.
 func WithDisableOutput(disable bool) Option {
 	return optionFunc(func(cfg *config) {
