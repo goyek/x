@@ -26,10 +26,6 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		a.Error("parse command line: ", err)
 		return false
 	}
-	if len(args) == 0 {
-		a.Error("no command provided")
-		return false
-	}
 
 	cmd := exec.CommandContext(a.Context(), args[0], args[1:]...) //nolint:gosec // it is a convenient function to run programs
 	cmd.Stdin = os.Stdin
