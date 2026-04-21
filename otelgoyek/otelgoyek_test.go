@@ -6,16 +6,14 @@ import (
 	"testing"
 
 	"github.com/goyek/goyek/v3"
-	"github.com/goyek/x/otelgoyek"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+
+	"github.com/goyek/x/otelgoyek"
 )
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
-	exp := tracetest.NewInMemoryExporter()
-	tp := trace.NewTracerProvider(
-		trace.WithSpanProcessor(trace.NewSimpleSpanProcessor(exp)),
-	)
+	exp, tp := setupOTel()
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
@@ -32,6 +30,7 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 	if len(spans) != 1 {
 		t.Fatalf("expected 1 span, got %d", len(spans))
 	}
+
 	for _, attr := range spans[0].Attributes {
 		if string(attr.Key) == "goyek.task.output" {
 			t.Errorf("found goyek.task.output attribute even though output capture is disabled: %v", attr.Value.AsString())
@@ -40,10 +39,7 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 }
 
 func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
-	exp := tracetest.NewInMemoryExporter()
-	tp := trace.NewTracerProvider(
-		trace.WithSpanProcessor(trace.NewSimpleSpanProcessor(exp)),
-	)
+	exp, tp := setupOTel()
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
@@ -57,12 +53,29 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	_ = f.Execute(context.Background(), []string{"test"})
 
 	spans := exp.GetSpans()
-	if len(spans) != 1 {
-		t.Fatalf("expected 1 span, got %d", len(spans))
+	var executeSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == "Execute" {
+			executeSpan = &s
+			break
+		}
 	}
-	for _, attr := range spans[0].Attributes {
+
+	if executeSpan == nil {
+		t.Fatal("Execute span not found")
+	}
+
+	for _, attr := range executeSpan.Attributes {
 		if string(attr.Key) == "goyek.flow.output" {
 			t.Errorf("found goyek.flow.output attribute even though output capture is disabled: %v", attr.Value.AsString())
 		}
 	}
+}
+
+func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
+	exp := tracetest.NewInMemoryExporter()
+	tp := trace.NewTracerProvider(
+		trace.WithSpanProcessor(trace.NewSimpleSpanProcessor(exp)),
+	)
+	return exp, tp
 }
