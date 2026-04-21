@@ -22,7 +22,7 @@ const (
 func Middleware(opts ...Option) goyek.Middleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
-	r := runner{tracer}
+	r := runner{tracer, cfg.DisableOutput}
 	return r.Middleware
 }
 
@@ -31,12 +31,13 @@ func Middleware(opts ...Option) goyek.Middleware {
 func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
-	e := executor{tracer}
+	e := executor{tracer, cfg.DisableOutput}
 	return e.Middleware
 }
 
 type executor struct {
-	tracer trace.Tracer
+	tracer        trace.Tracer
+	disableOutput bool
 }
 
 func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
@@ -50,12 +51,17 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 
 		in.Context = ctx
 
-		sb := &strings.Builder{}
-		in.Output = io.MultiWriter(in.Output, sb)
+		var sb *strings.Builder
+		if !e.disableOutput {
+			sb = &strings.Builder{}
+			in.Output = io.MultiWriter(in.Output, sb)
+		}
 
 		err := next(in)
 
-		span.SetAttributes(attribute.String("goyek.flow.output", sb.String()))
+		if !e.disableOutput {
+			span.SetAttributes(attribute.String("goyek.flow.output", sb.String()))
+		}
 		if err != nil {
 			span.SetStatus(codes.Error, err.Error())
 		}
@@ -64,7 +70,8 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 }
 
 type runner struct {
-	tracer trace.Tracer
+	tracer        trace.Tracer
+	disableOutput bool
 }
 
 func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
@@ -76,12 +83,17 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		in.Context = ctx
 
-		sb := &strings.Builder{}
-		in.Output = io.MultiWriter(in.Output, sb)
+		var sb *strings.Builder
+		if !r.disableOutput {
+			sb = &strings.Builder{}
+			in.Output = io.MultiWriter(in.Output, sb)
+		}
 
 		res := next(in)
 
-		span.SetAttributes(attribute.String("goyek.task.output", sb.String()))
+		if !r.disableOutput {
+			span.SetAttributes(attribute.String("goyek.task.output", sb.String()))
+		}
 
 		span.SetAttributes(attribute.String("goyek.task.status", res.Status.String()))
 		if res.Status == goyek.StatusFailed {

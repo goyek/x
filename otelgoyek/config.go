@@ -18,11 +18,13 @@ func (fn optionFunc) apply(cfg *config) {
 
 type config struct {
 	TracerProvider trace.TracerProvider
+	DisableOutput  bool
 }
 
 func newConfig(opts []Option) *config {
 	c := &config{
 		TracerProvider: otel.GetTracerProvider(),
+		DisableOutput:  false,
 	}
 	for _, opt := range opts {
 		opt.apply(c)
@@ -37,5 +39,13 @@ func WithTracerProvider(provider trace.TracerProvider) Option {
 		if provider != nil {
 			cfg.TracerProvider = provider
 		}
+	})
+}
+
+// WithDisableOutput specifies if the output should not be captured in the span attributes.
+// This is useful for security reasons, to avoid sensitive data exposure.
+func WithDisableOutput(disable bool) Option {
+	return optionFunc(func(cfg *config) {
+		cfg.DisableOutput = disable
 	})
 }
