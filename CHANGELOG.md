@@ -17,7 +17,7 @@ and this library adheres to
   in DOT format.
 - Add `otelgoyek.WithDisableOutput` option to disable output capture in traces.
 - Add `otelgoyek.WithOutputLimit` option to limit output capture in traces
-  to avoid memory exhaustion.
+  to avoid memory exhaustion (the default is 1 MiB).
 
 ### Changed
 
