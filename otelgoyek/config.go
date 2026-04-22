@@ -19,12 +19,14 @@ func (fn optionFunc) apply(cfg *config) {
 type config struct {
 	TracerProvider trace.TracerProvider
 	DisableOutput  bool
+	OutputLimit    int
 }
 
 func newConfig(opts []Option) *config {
 	c := &config{
 		TracerProvider: otel.GetTracerProvider(),
 		DisableOutput:  false,
+		OutputLimit:    1024 * 1024,
 	}
 	for _, opt := range opts {
 		opt.apply(c)
@@ -47,5 +49,13 @@ func WithTracerProvider(provider trace.TracerProvider) Option {
 func WithDisableOutput(disable bool) Option {
 	return optionFunc(func(cfg *config) {
 		cfg.DisableOutput = disable
+	})
+}
+
+// WithOutputLimit specifies the maximum number of bytes of output to capture in the span attributes.
+// The default is 1 MiB.
+func WithOutputLimit(limit int) Option {
+	return optionFunc(func(cfg *config) {
+		cfg.OutputLimit = limit
 	})
 }

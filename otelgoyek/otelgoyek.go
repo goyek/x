@@ -22,7 +22,11 @@ const (
 func Middleware(opts ...Option) goyek.Middleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
-	r := runner{tracer, cfg.DisableOutput}
+	r := runner{
+		tracer:        tracer,
+		disableOutput: cfg.DisableOutput,
+		outputLimit:   cfg.OutputLimit,
+	}
 	return r.Middleware
 }
 
@@ -31,13 +35,18 @@ func Middleware(opts ...Option) goyek.Middleware {
 func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
-	e := executor{tracer, cfg.DisableOutput}
+	e := executor{
+		tracer:        tracer,
+		disableOutput: cfg.DisableOutput,
+		outputLimit:   cfg.OutputLimit,
+	}
 	return e.Middleware
 }
 
 type executor struct {
 	tracer        trace.Tracer
 	disableOutput bool
+	outputLimit   int
 }
 
 func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
@@ -54,7 +63,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 		var sb *strings.Builder
 		if !e.disableOutput {
 			sb = &strings.Builder{}
-			in.Output = io.MultiWriter(in.Output, sb)
+			in.Output = io.MultiWriter(in.Output, &limitWriter{sb: sb, limit: e.outputLimit})
 		}
 
 		err := next(in)
@@ -72,6 +81,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 type runner struct {
 	tracer        trace.Tracer
 	disableOutput bool
+	outputLimit   int
 }
 
 func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
@@ -86,7 +96,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 		var sb *strings.Builder
 		if !r.disableOutput {
 			sb = &strings.Builder{}
-			in.Output = io.MultiWriter(in.Output, sb)
+			in.Output = io.MultiWriter(in.Output, &limitWriter{sb: sb, limit: r.outputLimit})
 		}
 
 		res := next(in)
@@ -112,4 +122,27 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		return res
 	}
+}
+
+type limitWriter struct {
+	sb    *strings.Builder
+	limit int
+}
+
+func (w *limitWriter) Write(p []byte) (int, error) {
+	if w.limit <= 0 {
+		return len(p), nil
+	}
+	available := w.limit - w.sb.Len()
+	if available <= 0 {
+		return len(p), nil
+	}
+	if len(p) > available {
+		n, err := w.sb.Write(p[:available])
+		if err != nil {
+			return n, err
+		}
+		return len(p), nil
+	}
+	return w.sb.Write(p)
 }
