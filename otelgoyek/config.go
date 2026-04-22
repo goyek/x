@@ -26,7 +26,7 @@ func newConfig(opts []Option) *config {
 	c := &config{
 		TracerProvider: otel.GetTracerProvider(),
 		DisableOutput:  false,
-		OutputLimit:    1024 * 1024,
+		OutputLimit:    1024 * 1024, //nolint:mnd // 1 MiB
 	}
 	for _, opt := range opts {
 		opt.apply(c)
