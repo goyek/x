@@ -16,6 +16,8 @@ and this library adheres to
 - Add `-graph` flag to `boot.Main` to output the task dependency graph
   in DOT format.
 - Add `otelgoyek.WithDisableOutput` option to disable output capture in traces.
+- Add `otelgoyek.WithOutputLimit` option to limit output capture in traces
+  to avoid memory exhaustion.
 
 ### Changed
 
