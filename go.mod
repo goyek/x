@@ -6,6 +6,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/goyek/goyek/v3 v3.0.1
 	github.com/mattn/go-shellwords v1.0.13
+	go.opentelemetry.io/contrib/propagators/envcar v0.68.0
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.43.0
 	go.opentelemetry.io/otel/sdk v1.43.0

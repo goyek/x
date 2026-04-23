@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/goyek/goyek/v3"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
@@ -13,6 +15,7 @@ import (
 )
 
 const attrTaskOutput = "goyek.task.output"
+const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -72,6 +75,50 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 			t.Errorf("found goyek.flow.output attribute even though output capture is disabled: %v", attr.Value.AsString())
 		}
 	}
+}
+
+func TestMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
+	useTraceContextPropagator(t)
+	t.Setenv("TRACEPARENT", traceparent)
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(_ *goyek.A) {
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	assertEnvParent(t, spans[0])
+}
+
+func TestExecutorMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
+	useTraceContextPropagator(t)
+	t.Setenv("TRACEPARENT", traceparent)
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(_ *goyek.A) {
+		},
+	})
+	f.UseExecutor(otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	assertEnvParent(t, spans[0])
 }
 
 func TestMiddleware_WithOutputLimit(t *testing.T) {
@@ -201,4 +248,26 @@ func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
 		trace.WithSpanProcessor(trace.NewSimpleSpanProcessor(exp)),
 	)
 	return exp, tp
+}
+
+func useTraceContextPropagator(t *testing.T) {
+	t.Helper()
+	previous := otel.GetTextMapPropagator()
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+	t.Cleanup(func() {
+		otel.SetTextMapPropagator(previous)
+	})
+}
+
+func assertEnvParent(t *testing.T, span tracetest.SpanStub) {
+	t.Helper()
+	if got, want := span.Parent.TraceID().String(), "0102030405060708090a0b0c0d0e0f10"; got != want {
+		t.Errorf("parent trace ID = %q, want %q", got, want)
+	}
+	if got, want := span.Parent.SpanID().String(), "0102030405060708"; got != want {
+		t.Errorf("parent span ID = %q, want %q", got, want)
+	}
+	if !span.Parent.IsRemote() {
+		t.Error("parent span context is not remote")
+	}
 }

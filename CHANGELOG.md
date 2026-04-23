@@ -18,6 +18,8 @@ and this library adheres to
 - Add `otelgoyek.WithDisableOutput` option to disable output capture in traces.
 - Add `otelgoyek.WithOutputLimit` option to limit output capture in traces
   to avoid memory exhaustion (the default is 1 MiB).
+- Add OpenTelemetry environment variable carrier trace context extraction to
+  `otelgoyek` spans.
 
 ### Changed
 
