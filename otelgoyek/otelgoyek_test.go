@@ -154,6 +154,45 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	}
 }
 
+func TestMiddleware_DisableOutput_Panic(t *testing.T) {
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "panic",
+		Action: func(a *goyek.A) {
+			panic("sensitive info")
+		},
+	})
+	f.Use(otelgoyek.Middleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithDisableOutput(true),
+	))
+
+	_ = f.Execute(context.Background(), []string{"panic"})
+
+	spans := exp.GetSpans()
+	if len(spans) == 0 {
+		t.Fatal("no spans recorded")
+	}
+
+	for _, span := range spans {
+		if span.Name == "panic" {
+			for _, attr := range span.Attributes {
+				if string(attr.Key) == "goyek.task.panic.value" {
+					t.Errorf("panic value recorded even though output is disabled: %v", attr.Value.AsString())
+				}
+				if string(attr.Key) == "goyek.task.panic.stack" {
+					t.Errorf("panic stack recorded even though output is disabled")
+				}
+				if string(attr.Key) == "goyek.task.output" {
+					t.Errorf("output recorded even though output is disabled")
+				}
+			}
+		}
+	}
+}
+
 func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
 	exp := tracetest.NewInMemoryExporter()
 	tp := trace.NewTracerProvider(

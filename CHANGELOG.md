@@ -23,6 +23,8 @@ and this library adheres to
 
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
+- Prevent recording panic value and stack trace in `otelgoyek.Middleware` when
+  `WithDisableOutput` is set to `true` to avoid sensitive data exposure.
 
 ### Removed
 

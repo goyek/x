@@ -110,7 +110,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 			span.SetStatus(codes.Error, "task failed: "+in.TaskName)
 		}
 
-		if res.PanicStack != nil {
+		if res.PanicStack != nil && !r.disableOutput {
 			if res.PanicValue != nil {
 				span.SetAttributes(attribute.String("goyek.task.panic.value", fmt.Sprint(res.PanicValue)))
 			} else {
