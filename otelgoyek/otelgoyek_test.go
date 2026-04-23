@@ -12,6 +12,8 @@ import (
 	"github.com/goyek/x/otelgoyek"
 )
 
+const attrTaskOutput = "goyek.task.output"
+
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
 
@@ -32,8 +34,8 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 	}
 
 	for _, attr := range spans[0].Attributes {
-		if string(attr.Key) == "goyek.task.output" {
-			t.Errorf("found goyek.task.output attribute even though output capture is disabled: %v", attr.Value.AsString())
+		if string(attr.Key) == attrTaskOutput {
+			t.Errorf("found %s attribute even though output capture is disabled: %v", attrTaskOutput, attr.Value.AsString())
 		}
 	}
 }
@@ -94,7 +96,7 @@ func TestMiddleware_WithOutputLimit(t *testing.T) {
 	var got string
 	found := false
 	for _, attr := range spans[0].Attributes {
-		if string(attr.Key) == "goyek.task.output" {
+		if string(attr.Key) == attrTaskOutput {
 			got = attr.Value.AsString()
 			found = true
 			break
@@ -102,7 +104,7 @@ func TestMiddleware_WithOutputLimit(t *testing.T) {
 	}
 
 	if !found {
-		t.Error("goyek.task.output attribute not found")
+		t.Errorf("%s attribute not found", attrTaskOutput)
 	}
 	if got != "12345" {
 		t.Errorf("expected truncated output '12345', got %q", got)
@@ -151,6 +153,45 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	}
 	if got != "123" {
 		t.Errorf("expected truncated output '123', got %q", got)
+	}
+}
+
+func TestMiddleware_DisableOutput_Panic(t *testing.T) {
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "panic",
+		Action: func(_ *goyek.A) {
+			panic("sensitive info")
+		},
+	})
+	f.Use(otelgoyek.Middleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithDisableOutput(true),
+	))
+
+	_ = f.Execute(context.Background(), []string{"panic"})
+
+	spans := exp.GetSpans()
+	if len(spans) == 0 {
+		t.Fatal("no spans recorded")
+	}
+
+	for _, span := range spans {
+		if span.Name == "panic" {
+			for _, attr := range span.Attributes {
+				if string(attr.Key) == "goyek.task.panic.value" {
+					t.Errorf("panic value recorded even though output is disabled: %v", attr.Value.AsString())
+				}
+				if string(attr.Key) == "goyek.task.panic.stack" {
+					t.Errorf("panic stack recorded even though output is disabled")
+				}
+				if string(attr.Key) == attrTaskOutput {
+					t.Errorf("output recorded even though output is disabled")
+				}
+			}
+		}
 	}
 }
 
