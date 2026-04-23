@@ -1,12 +1,20 @@
 // Package otelgoyek provides OpenTelemetry instrumentation for goyek.
+//
+// The instrumentation extracts context from environment variables using the
+// global OpenTelemetry text map propagator and the envcar carrier before
+// starting spans. Configure the global propagator, for example with
+// propagation.TraceContext, to continue traces passed through the environment.
 package otelgoyek
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/goyek/goyek/v3"
+	"go.opentelemetry.io/contrib/propagators/envcar"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -51,7 +59,10 @@ type executor struct {
 
 func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 	return func(in goyek.ExecuteInput) error {
-		ctx, span := e.tracer.Start(in.Context, "Execute", trace.WithAttributes(
+		// ExecutorMiddleware creates the flow root span, so it also needs to
+		// extract environment context before task spans inherit from it.
+		ctx := extractContextFromEnv(in.Context)
+		ctx, span := e.tracer.Start(ctx, "Execute", trace.WithAttributes(
 			attribute.StringSlice("goyek.flow.tasks", in.Tasks),
 			attribute.StringSlice("goyek.flow.skip_tasks", in.SkipTasks),
 			attribute.Bool("goyek.flow.no_deps", in.NoDeps),
@@ -86,7 +97,10 @@ type runner struct {
 
 func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 	return func(in goyek.Input) goyek.Result {
-		ctx, span := r.tracer.Start(in.Context, in.TaskName, trace.WithAttributes(
+		// Middleware can be used without ExecutorMiddleware, so task spans need
+		// to extract environment context before starting their own root span.
+		ctx := extractContextFromEnv(in.Context)
+		ctx, span := r.tracer.Start(ctx, in.TaskName, trace.WithAttributes(
 			attribute.String("goyek.task.name", in.TaskName),
 		))
 		defer span.End()
@@ -145,4 +159,11 @@ func (w *limitWriter) Write(p []byte) (int, error) {
 		return len(p), nil
 	}
 	return w.sb.Write(p)
+}
+
+func extractContextFromEnv(ctx context.Context) context.Context {
+	if trace.SpanContextFromContext(ctx).IsValid() {
+		return ctx
+	}
+	return otel.GetTextMapPropagator().Extract(ctx, &envcar.Carrier{})
 }
