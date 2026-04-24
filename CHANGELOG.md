@@ -26,6 +26,11 @@ and this library adheres to
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
 
+### Fixed
+
+- Fix sensitive error message leakage in OpenTelemetry span status for
+  `ExecutorMiddleware` when output is disabled.
+
 ### Removed
 
 - Drop support for Go 1.23.

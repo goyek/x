@@ -83,7 +83,11 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 			span.SetAttributes(attribute.String("goyek.flow.output", sb.String()))
 		}
 		if err != nil {
-			span.SetStatus(codes.Error, err.Error())
+			msg := err.Error()
+			if e.disableOutput {
+				msg = "flow execution failed"
+			}
+			span.SetStatus(codes.Error, msg)
 		}
 		return err
 	}
