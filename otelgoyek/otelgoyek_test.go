@@ -99,6 +99,31 @@ func TestMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
 	assertEnvParent(t, spans[0])
 }
 
+func TestMiddleware_WithPropagator(t *testing.T) {
+	usePropagator(t, propagation.NewCompositeTextMapPropagator())
+	t.Setenv("TRACEPARENT", traceparent)
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(_ *goyek.A) {
+		},
+	})
+	f.Use(otelgoyek.Middleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithPropagator(propagation.TraceContext{}),
+	))
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	assertEnvParent(t, spans[0])
+}
+
 func TestExecutorMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
 	useTraceContextPropagator(t)
 	t.Setenv("TRACEPARENT", traceparent)
@@ -111,6 +136,31 @@ func TestExecutorMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
 		},
 	})
 	f.UseExecutor(otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	assertEnvParent(t, spans[0])
+}
+
+func TestExecutorMiddleware_WithPropagator(t *testing.T) {
+	usePropagator(t, propagation.NewCompositeTextMapPropagator())
+	t.Setenv("TRACEPARENT", traceparent)
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(_ *goyek.A) {
+		},
+	})
+	f.UseExecutor(otelgoyek.ExecutorMiddleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithPropagator(propagation.TraceContext{}),
+	))
 
 	_ = f.Execute(context.Background(), []string{"test"})
 
@@ -252,8 +302,13 @@ func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
 
 func useTraceContextPropagator(t *testing.T) {
 	t.Helper()
+	usePropagator(t, propagation.TraceContext{})
+}
+
+func usePropagator(t *testing.T, propagator propagation.TextMapPropagator) {
+	t.Helper()
 	previous := otel.GetTextMapPropagator()
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagator)
 	t.Cleanup(func() {
 		otel.SetTextMapPropagator(previous)
 	})

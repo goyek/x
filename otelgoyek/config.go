@@ -2,6 +2,7 @@ package otelgoyek
 
 import (
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -18,6 +19,7 @@ func (fn optionFunc) apply(cfg *config) {
 
 type config struct {
 	TracerProvider trace.TracerProvider
+	Propagator     propagation.TextMapPropagator
 	DisableOutput  bool
 	OutputLimit    int
 }
@@ -25,6 +27,7 @@ type config struct {
 func newConfig(opts []Option) *config {
 	c := &config{
 		TracerProvider: otel.GetTracerProvider(),
+		Propagator:     otel.GetTextMapPropagator(),
 		DisableOutput:  false,
 		OutputLimit:    1024 * 1024, //nolint:mnd // 1 MiB
 	}
@@ -40,6 +43,16 @@ func WithTracerProvider(provider trace.TracerProvider) Option {
 	return optionFunc(func(cfg *config) {
 		if provider != nil {
 			cfg.TracerProvider = provider
+		}
+	})
+}
+
+// WithPropagator specifies a text map propagator to extract context from the environment variables.
+// If none is specified, the global propagator is used.
+func WithPropagator(propagator propagation.TextMapPropagator) Option {
+	return optionFunc(func(cfg *config) {
+		if propagator != nil {
+			cfg.Propagator = propagator
 		}
 	})
 }

@@ -20,6 +20,8 @@ and this library adheres to
   to avoid memory exhaustion (the default is 1 MiB).
 - Add OpenTelemetry environment variable carrier trace context extraction to
   `otelgoyek` spans.
+- Add `otelgoyek.WithPropagator` option to configure context extraction from
+  environment variables.
 
 ### Changed
 
