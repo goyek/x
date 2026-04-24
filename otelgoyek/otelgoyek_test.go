@@ -2,11 +2,13 @@ package otelgoyek_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
@@ -16,6 +18,7 @@ import (
 
 const attrTaskOutput = "goyek.task.output"
 const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+const spanNameExecute = "Execute"
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -60,7 +63,7 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
 	for _, s := range spans {
-		if s.Name == "Execute" {
+		if s.Name == spanNameExecute {
 			executeSpan = &s
 			break
 		}
@@ -225,7 +228,7 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
 	for _, s := range spans {
-		if s.Name == "Execute" {
+		if s.Name == spanNameExecute {
 			executeSpan = &s
 			break
 		}
@@ -250,6 +253,49 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	}
 	if got != "123" {
 		t.Errorf("expected truncated output '123', got %q", got)
+	}
+}
+
+func TestExecutorMiddleware_WithDisableOutput_StatusLeak(t *testing.T) {
+	exp, tp := setupOTel()
+
+	// We need a custom executor that returns an error with sensitive info
+	// because goyek.Flow.Execute returns an error if a task fails.
+	mw := otelgoyek.ExecutorMiddleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithDisableOutput(true),
+	)
+
+	next := func(_ goyek.ExecuteInput) error {
+		return errors.New("sensitive error message")
+	}
+
+	executor := mw(next)
+
+	_ = executor(goyek.ExecuteInput{
+		Context: context.Background(),
+		Tasks:   []string{"test"},
+	})
+
+	spans := exp.GetSpans()
+	var executeSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == spanNameExecute {
+			executeSpan = &s
+			break
+		}
+	}
+
+	if executeSpan == nil {
+		t.Fatal("Execute span not found")
+	}
+
+	if executeSpan.Status.Code != codes.Error {
+		t.Errorf("expected span status Error, got %v", executeSpan.Status.Code)
+	}
+
+	if executeSpan.Status.Description == "sensitive error message" {
+		t.Errorf("found sensitive error message in span status even though output capture is disabled")
 	}
 }
 

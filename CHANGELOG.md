@@ -15,7 +15,8 @@ and this library adheres to
   with registered tasks.
 - Add `-graph` flag to `boot.Main` to output the task dependency graph
   in DOT format.
-- Add `otelgoyek.WithDisableOutput` option to disable output capture in traces.
+- Add `otelgoyek.WithDisableOutput` option to disable output capture and
+  redact error messages in traces to avoid sensitive data exposure.
 - Add `otelgoyek.WithOutputLimit` option to limit output capture in traces
   to avoid memory exhaustion (the default is 1 MiB).
 - Add OpenTelemetry environment variable carrier trace context extraction to
