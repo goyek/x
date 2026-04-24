@@ -1,9 +1,9 @@
 // Package otelgoyek provides OpenTelemetry instrumentation for goyek.
 //
 // The instrumentation extracts context from environment variables using the
-// global OpenTelemetry text map propagator and the envcar carrier before
-// starting spans. Configure the global propagator, for example with
-// propagation.TraceContext, to continue traces passed through the environment.
+// configured OpenTelemetry text map propagator and the envcar carrier before
+// starting spans. Configure the propagator, for example with
+// [WithPropagator] and propagation.TraceContext, to continue traces passed through the environment.
 package otelgoyek
 
 import (
@@ -14,9 +14,9 @@ import (
 
 	"github.com/goyek/goyek/v3"
 	"go.opentelemetry.io/contrib/propagators/envcar"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -32,6 +32,7 @@ func Middleware(opts ...Option) goyek.Middleware {
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
 	r := runner{
 		tracer:        tracer,
+		propagator:    cfg.Propagator,
 		disableOutput: cfg.DisableOutput,
 		outputLimit:   cfg.OutputLimit,
 	}
@@ -45,6 +46,7 @@ func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
 	e := executor{
 		tracer:        tracer,
+		propagator:    cfg.Propagator,
 		disableOutput: cfg.DisableOutput,
 		outputLimit:   cfg.OutputLimit,
 	}
@@ -53,6 +55,7 @@ func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 
 type executor struct {
 	tracer        trace.Tracer
+	propagator    propagation.TextMapPropagator
 	disableOutput bool
 	outputLimit   int
 }
@@ -61,7 +64,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 	return func(in goyek.ExecuteInput) error {
 		// ExecutorMiddleware creates the flow root span, so it also needs to
 		// extract environment context before task spans inherit from it.
-		ctx := extractContextFromEnv(in.Context)
+		ctx := extractContextFromEnv(in.Context, e.propagator)
 		ctx, span := e.tracer.Start(ctx, "Execute", trace.WithAttributes(
 			attribute.StringSlice("goyek.flow.tasks", in.Tasks),
 			attribute.StringSlice("goyek.flow.skip_tasks", in.SkipTasks),
@@ -91,6 +94,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 
 type runner struct {
 	tracer        trace.Tracer
+	propagator    propagation.TextMapPropagator
 	disableOutput bool
 	outputLimit   int
 }
@@ -99,7 +103,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 	return func(in goyek.Input) goyek.Result {
 		// Middleware can be used without ExecutorMiddleware, so task spans need
 		// to extract environment context before starting their own root span.
-		ctx := extractContextFromEnv(in.Context)
+		ctx := extractContextFromEnv(in.Context, r.propagator)
 		ctx, span := r.tracer.Start(ctx, in.TaskName, trace.WithAttributes(
 			attribute.String("goyek.task.name", in.TaskName),
 		))
@@ -161,9 +165,9 @@ func (w *limitWriter) Write(p []byte) (int, error) {
 	return w.sb.Write(p)
 }
 
-func extractContextFromEnv(ctx context.Context) context.Context {
+func extractContextFromEnv(ctx context.Context, propagator propagation.TextMapPropagator) context.Context {
 	if trace.SpanContextFromContext(ctx).IsValid() {
 		return ctx
 	}
-	return otel.GetTextMapPropagator().Extract(ctx, &envcar.Carrier{})
+	return propagator.Extract(ctx, &envcar.Carrier{})
 }
