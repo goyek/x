@@ -18,6 +18,7 @@ import (
 
 const attrTaskOutput = "goyek.task.output"
 const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+const spanNameExecute = "Execute"
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -62,7 +63,7 @@ func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
 	for _, s := range spans {
-		if s.Name == "Execute" {
+		if s.Name == spanNameExecute {
 			executeSpan = &s
 			break
 		}
@@ -177,7 +178,7 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
 	for _, s := range spans {
-		if s.Name == "Execute" {
+		if s.Name == spanNameExecute {
 			executeSpan = &s
 			break
 		}
@@ -229,7 +230,7 @@ func TestExecutorMiddleware_WithDisableOutput_StatusLeak(t *testing.T) {
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
 	for _, s := range spans {
-		if s.Name == "Execute" {
+		if s.Name == spanNameExecute {
 			executeSpan = &s
 			break
 		}
