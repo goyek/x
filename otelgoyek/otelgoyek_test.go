@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
@@ -371,4 +372,29 @@ func assertEnvParent(t *testing.T, span tracetest.SpanStub) {
 	if !span.Parent.IsRemote() {
 		t.Error("parent span context is not remote")
 	}
+}
+
+func TestMiddleware_OutputRace(t *testing.T) {
+	_, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "race",
+		Action: func(a *goyek.A) {
+			var wg sync.WaitGroup
+			for i := 0; i < 2; i++ {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					for j := 0; j < 1000; j++ {
+						fmt.Fprint(a.Output(), "a")
+					}
+				}()
+			}
+			wg.Wait()
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{"race"})
 }
