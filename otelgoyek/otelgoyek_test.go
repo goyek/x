@@ -17,9 +17,11 @@ import (
 	"github.com/goyek/x/otelgoyek"
 )
 
-const attrTaskOutput = "goyek.task.output"
-const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
-const spanNameExecute = "Execute"
+const (
+	attrTaskOutput  = "goyek.task.output"
+	traceparent     = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+	spanNameExecute = "Execute"
+)
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -374,7 +376,7 @@ func assertEnvParent(t *testing.T, span tracetest.SpanStub) {
 	}
 }
 
-func TestMiddleware_OutputRace(t *testing.T) {
+func TestMiddleware_OutputRace(_ *testing.T) {
 	_, tp := setupOTel()
 
 	f := &goyek.Flow{}
