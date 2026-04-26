@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 
 	"github.com/goyek/goyek/v3"
 	"go.opentelemetry.io/contrib/propagators/envcar"
@@ -147,11 +148,14 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 }
 
 type limitWriter struct {
+	mu    sync.Mutex
 	sb    *strings.Builder
 	limit int
 }
 
 func (w *limitWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	if w.limit <= 0 {
 		return len(p), nil
 	}

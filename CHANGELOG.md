@@ -9,6 +9,10 @@ and this library adheres to
 
 ## [Unreleased](https://github.com/goyek/x/compare/v0.4.0...HEAD)
 
+### Fixed
+
+- Fix data race in `otelgoyek` when capturing task or flow output.
+
 ### Added
 
 - Add `graphviz.Draw` function which visualizes a dependency graph
