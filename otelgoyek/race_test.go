@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestLimitWriter_Race(t *testing.T) {
+func TestLimitWriter_Race(_ *testing.T) {
 	lw := &limitWriter{
 		sb:    &strings.Builder{},
 		limit: 10000,
@@ -19,7 +19,7 @@ func TestLimitWriter_Race(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 			for j := 0; j < 100; j++ {
-				_, _ = lw.Write([]byte(fmt.Sprintf("goroutine %d, line %d\n", id, j)))
+				_, _ = fmt.Fprintf(lw, "goroutine %d, line %d\n", id, j)
 			}
 		}(i)
 	}

@@ -75,16 +75,16 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 
 		in.Context = ctx
 
-		var sb *strings.Builder
+		var lw *limitWriter
 		if !e.disableOutput {
-			sb = &strings.Builder{}
-			in.Output = io.MultiWriter(in.Output, &limitWriter{sb: sb, limit: e.outputLimit})
+			lw = &limitWriter{sb: &strings.Builder{}, limit: e.outputLimit}
+			in.Output = io.MultiWriter(in.Output, lw)
 		}
 
 		err := next(in)
 
 		if !e.disableOutput {
-			span.SetAttributes(attribute.String("goyek.flow.output", sb.String()))
+			span.SetAttributes(attribute.String("goyek.flow.output", lw.String()))
 		}
 		if err != nil {
 			msg := err.Error()
@@ -116,16 +116,16 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		in.Context = ctx
 
-		var sb *strings.Builder
+		var lw *limitWriter
 		if !r.disableOutput {
-			sb = &strings.Builder{}
-			in.Output = io.MultiWriter(in.Output, &limitWriter{sb: sb, limit: r.outputLimit})
+			lw = &limitWriter{sb: &strings.Builder{}, limit: r.outputLimit}
+			in.Output = io.MultiWriter(in.Output, lw)
 		}
 
 		res := next(in)
 
 		if !r.disableOutput {
-			span.SetAttributes(attribute.String("goyek.task.output", sb.String()))
+			span.SetAttributes(attribute.String("goyek.task.output", lw.String()))
 		}
 
 		span.SetAttributes(attribute.String("goyek.task.status", res.Status.String()))
@@ -171,6 +171,12 @@ func (w *limitWriter) Write(p []byte) (int, error) {
 		return len(p), nil
 	}
 	return w.sb.Write(p)
+}
+
+func (w *limitWriter) String() string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.sb.String()
 }
 
 func extractContextFromEnv(ctx context.Context, propagator propagation.TextMapPropagator) context.Context {
