@@ -11,6 +11,8 @@ and this library adheres to
 
 ### Added
 
+- Add thread-safe `limitWriter` in `otelgoyek` to prevent data races when
+  capturing output.
 - Add `graphviz.Draw` function which visualizes a dependency graph
   with registered tasks.
 - Add `-graph` flag to `boot.Main` to output the task dependency graph
