@@ -29,6 +29,11 @@ and this library adheres to
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
 
+### Fixed
+
+- Fix races in `otelgoyek` when task output is written from multiple
+  goroutines.
+
 ### Removed
 
 - Drop support for Go 1.23.
