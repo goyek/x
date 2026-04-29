@@ -23,6 +23,8 @@ and this library adheres to
   `otelgoyek` spans.
 - Add `otelgoyek.WithPropagator` option to configure context extraction from
   environment variables.
+- Add `cmd.ClearEnv` option to prevent environment inheritance in `cmd.Exec`.
+- Add `cmd.UnsetEnv` option to remove a specific environment variable in `cmd.Exec`.
 
 ### Changed
 
