@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/goyek/goyek/v3"
 	"github.com/mattn/go-shellwords"
@@ -56,6 +57,31 @@ func Env(k, v string) Option {
 	return func(_ *goyek.A, cmd *exec.Cmd) {
 		env := k + "=" + v
 		cmd.Env = append(cmd.Env, env)
+	}
+}
+
+// UnsetEnv is an option to unset an environment variable.
+func UnsetEnv(key string) Option {
+	return func(_ *goyek.A, cmd *exec.Cmd) {
+		prefix := key + "="
+		env := cmd.Env
+		if env == nil {
+			env = os.Environ()
+		}
+		newEnv := make([]string, 0, len(env))
+		for _, e := range env {
+			if !strings.HasPrefix(e, prefix) {
+				newEnv = append(newEnv, e)
+			}
+		}
+		cmd.Env = newEnv
+	}
+}
+
+// ClearEnv is an option to clear the environment variables.
+func ClearEnv() Option {
+	return func(_ *goyek.A, cmd *exec.Cmd) {
+		cmd.Env = []string{}
 	}
 }
 
