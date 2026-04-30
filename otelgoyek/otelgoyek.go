@@ -90,6 +90,8 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 			msg := err.Error()
 			if e.disableOutput {
 				msg = "flow execution failed"
+			} else if e.outputLimit > 0 && len(msg) > e.outputLimit {
+				msg = msg[:e.outputLimit]
 			}
 			span.SetStatus(codes.Error, msg)
 		}
@@ -135,12 +137,20 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		if res.PanicStack != nil && !r.disableOutput {
 			if res.PanicValue != nil {
-				span.SetAttributes(attribute.String("goyek.task.panic.value", fmt.Sprint(res.PanicValue)))
+				val := fmt.Sprint(res.PanicValue)
+				if r.outputLimit > 0 && len(val) > r.outputLimit {
+					val = val[:r.outputLimit]
+				}
+				span.SetAttributes(attribute.String("goyek.task.panic.value", val))
 			} else {
 				span.SetAttributes(attribute.String("goyek.task.panic.value", "panic(nil) or runtime.Goexit() called"))
 			}
 
-			span.SetAttributes(attribute.String("goyek.task.panic.stack", string(res.PanicStack)))
+			stack := string(res.PanicStack)
+			if r.outputLimit > 0 && len(stack) > r.outputLimit {
+				stack = stack[:r.outputLimit]
+			}
+			span.SetAttributes(attribute.String("goyek.task.panic.stack", stack))
 		}
 
 		return res

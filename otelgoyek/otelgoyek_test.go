@@ -46,6 +46,123 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 	}
 }
 
+func TestMiddleware_PanicStatus(t *testing.T) {
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "panic",
+		Action: func(_ *goyek.A) {
+			panic("something went wrong")
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{"panic"})
+
+	spans := exp.GetSpans()
+	if len(spans) == 0 {
+		t.Fatal("no spans recorded")
+	}
+
+	for _, span := range spans {
+		if span.Name == "panic" {
+			if span.Status.Code != codes.Error {
+				t.Errorf("expected span status Error for panicking task, got %v", span.Status.Code)
+			}
+		}
+	}
+}
+
+func TestMiddleware_PanicTruncation(t *testing.T) {
+	exp, tp := setupOTel()
+
+	limit := 10
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "panic",
+		Action: func(_ *goyek.A) {
+			panic("1234567890ABCDE")
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithOutputLimit(limit)))
+
+	_ = f.Execute(context.Background(), []string{"panic"})
+
+	spans := exp.GetSpans()
+	var taskSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == "panic" {
+			taskSpan = &s
+			break
+		}
+	}
+
+	if taskSpan == nil {
+		t.Fatal("task span not found")
+	}
+
+	for _, attr := range taskSpan.Attributes {
+		if string(attr.Key) == "goyek.task.panic.value" {
+			got := attr.Value.AsString()
+			if len(got) > limit {
+				t.Errorf("panic value not truncated: got length %d, limit %d", len(got), limit)
+			}
+			if got != "1234567890" {
+				t.Errorf("expected truncated panic value '1234567890', got %q", got)
+			}
+		}
+		if string(attr.Key) == "goyek.task.panic.stack" {
+			got := attr.Value.AsString()
+			if len(got) > limit {
+				t.Errorf("panic stack not truncated: got length %d, limit %d", len(got), limit)
+			}
+		}
+	}
+}
+
+func TestExecutorMiddleware_ErrorTruncation(t *testing.T) {
+	exp, tp := setupOTel()
+
+	limit := 5
+	mw := otelgoyek.ExecutorMiddleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithOutputLimit(limit),
+	)
+
+	next := func(_ goyek.ExecuteInput) error {
+		return fmt.Errorf("1234567890")
+	}
+
+	executor := mw(next)
+
+	_ = executor(goyek.ExecuteInput{
+		Context: context.Background(),
+		Tasks:   []string{"test"},
+	})
+
+	spans := exp.GetSpans()
+	var executeSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == spanNameExecute {
+			executeSpan = &s
+			break
+		}
+	}
+
+	if executeSpan == nil {
+		t.Fatal("Execute span not found")
+	}
+
+	got := executeSpan.Status.Description
+	if len(got) > limit {
+		t.Errorf("error status description not truncated: got length %d, limit %d", len(got), limit)
+	}
+	if got != "12345" {
+		t.Errorf("expected truncated error message '12345', got %q", got)
+	}
+}
+
 func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
 
