@@ -19,20 +19,22 @@ import (
 const attrTaskOutput = "goyek.task.output"
 const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
 const spanNameExecute = "Execute"
+const taskNameTest = "test"
+const taskNamePanic = "panic"
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(a *goyek.A) {
 			fmt.Fprint(a.Output(), "secret message")
 		},
 	})
 	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithDisableOutput(true)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -46,19 +48,136 @@ func TestMiddleware_WithDisableOutput(t *testing.T) {
 	}
 }
 
+func TestMiddleware_PanicStatus(t *testing.T) {
+	exp, tp := setupOTel()
+
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: taskNamePanic,
+		Action: func(_ *goyek.A) {
+			panic("something went wrong")
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
+
+	_ = f.Execute(context.Background(), []string{taskNamePanic})
+
+	spans := exp.GetSpans()
+	if len(spans) == 0 {
+		t.Fatal("no spans recorded")
+	}
+
+	for _, span := range spans {
+		if span.Name == taskNamePanic {
+			if span.Status.Code != codes.Error {
+				t.Errorf("expected span status Error for panicking task, got %v", span.Status.Code)
+			}
+		}
+	}
+}
+
+func TestMiddleware_PanicTruncation(t *testing.T) {
+	exp, tp := setupOTel()
+
+	limit := 10
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: taskNamePanic,
+		Action: func(_ *goyek.A) {
+			panic("1234567890ABCDE")
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithOutputLimit(limit)))
+
+	_ = f.Execute(context.Background(), []string{taskNamePanic})
+
+	spans := exp.GetSpans()
+	var taskSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == taskNamePanic {
+			taskSpan = &s
+			break
+		}
+	}
+
+	if taskSpan == nil {
+		t.Fatal("task span not found")
+	}
+
+	for _, attr := range taskSpan.Attributes {
+		if string(attr.Key) == "goyek.task.panic.value" {
+			got := attr.Value.AsString()
+			if len(got) > limit {
+				t.Errorf("panic value not truncated: got length %d, limit %d", len(got), limit)
+			}
+			if got != "1234567890" {
+				t.Errorf("expected truncated panic value '1234567890', got %q", got)
+			}
+		}
+		if string(attr.Key) == "goyek.task.panic.stack" {
+			got := attr.Value.AsString()
+			if len(got) > limit {
+				t.Errorf("panic stack not truncated: got length %d, limit %d", len(got), limit)
+			}
+		}
+	}
+}
+
+func TestExecutorMiddleware_ErrorTruncation(t *testing.T) {
+	exp, tp := setupOTel()
+
+	limit := 5
+	mw := otelgoyek.ExecutorMiddleware(
+		otelgoyek.WithTracerProvider(tp),
+		otelgoyek.WithOutputLimit(limit),
+	)
+
+	next := func(_ goyek.ExecuteInput) error {
+		return fmt.Errorf("1234567890")
+	}
+
+	executor := mw(next)
+
+	_ = executor(goyek.ExecuteInput{
+		Context: context.Background(),
+		Tasks:   []string{taskNameTest},
+	})
+
+	spans := exp.GetSpans()
+	var executeSpan *tracetest.SpanStub
+	for _, s := range spans {
+		if s.Name == spanNameExecute {
+			executeSpan = &s
+			break
+		}
+	}
+
+	if executeSpan == nil {
+		t.Fatal("Execute span not found")
+	}
+
+	got := executeSpan.Status.Description
+	if len(got) > limit {
+		t.Errorf("error status description not truncated: got length %d, limit %d", len(got), limit)
+	}
+	if got != "12345" {
+		t.Errorf("expected truncated error message '12345', got %q", got)
+	}
+}
+
 func TestExecutorMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(a *goyek.A) {
 			fmt.Fprint(a.Output(), "secret flow message")
 		},
 	})
 	f.UseExecutor(otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithDisableOutput(true)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
@@ -87,13 +206,13 @@ func TestMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(_ *goyek.A) {
 		},
 	})
 	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -109,7 +228,7 @@ func TestMiddleware_WithPropagator(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(_ *goyek.A) {
 		},
 	})
@@ -118,7 +237,7 @@ func TestMiddleware_WithPropagator(t *testing.T) {
 		otelgoyek.WithPropagator(propagation.TraceContext{}),
 	))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -134,13 +253,13 @@ func TestExecutorMiddleware_ExtractsTraceContextFromEnvironment(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(_ *goyek.A) {
 		},
 	})
 	f.UseExecutor(otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -156,7 +275,7 @@ func TestExecutorMiddleware_WithPropagator(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(_ *goyek.A) {
 		},
 	})
@@ -165,7 +284,7 @@ func TestExecutorMiddleware_WithPropagator(t *testing.T) {
 		otelgoyek.WithPropagator(propagation.TraceContext{}),
 	))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -179,14 +298,14 @@ func TestMiddleware_WithOutputLimit(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(a *goyek.A) {
 			fmt.Fprint(a.Output(), "1234567890")
 		},
 	})
 	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithOutputLimit(5)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	if len(spans) != 1 {
@@ -216,14 +335,14 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "test",
+		Name: taskNameTest,
 		Action: func(a *goyek.A) {
 			fmt.Fprint(a.Output(), "1234567890")
 		},
 	})
 	f.UseExecutor(otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp), otelgoyek.WithOutputLimit(3)))
 
-	_ = f.Execute(context.Background(), []string{"test"})
+	_ = f.Execute(context.Background(), []string{taskNameTest})
 
 	spans := exp.GetSpans()
 	var executeSpan *tracetest.SpanStub
@@ -274,7 +393,7 @@ func TestExecutorMiddleware_WithDisableOutput_StatusLeak(t *testing.T) {
 
 	_ = executor(goyek.ExecuteInput{
 		Context: context.Background(),
-		Tasks:   []string{"test"},
+		Tasks:   []string{taskNameTest},
 	})
 
 	spans := exp.GetSpans()
@@ -304,7 +423,7 @@ func TestMiddleware_DisableOutput_Panic(t *testing.T) {
 
 	f := &goyek.Flow{}
 	f.Define(goyek.Task{
-		Name: "panic",
+		Name: taskNamePanic,
 		Action: func(_ *goyek.A) {
 			panic("sensitive info")
 		},
@@ -314,7 +433,7 @@ func TestMiddleware_DisableOutput_Panic(t *testing.T) {
 		otelgoyek.WithDisableOutput(true),
 	))
 
-	_ = f.Execute(context.Background(), []string{"panic"})
+	_ = f.Execute(context.Background(), []string{taskNamePanic})
 
 	spans := exp.GetSpans()
 	if len(spans) == 0 {
@@ -322,7 +441,7 @@ func TestMiddleware_DisableOutput_Panic(t *testing.T) {
 	}
 
 	for _, span := range spans {
-		if span.Name == "panic" {
+		if span.Name == taskNamePanic {
 			for _, attr := range span.Attributes {
 				if string(attr.Key) == "goyek.task.panic.value" {
 					t.Errorf("panic value recorded even though output is disabled: %v", attr.Value.AsString())
