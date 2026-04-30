@@ -35,9 +35,6 @@ and this library adheres to
 
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
-- Truncate panic values, panic stack traces, and flow error messages in `otelgoyek`
-  according to `WithOutputLimit`.
-- Set OpenTelemetry span status to error when a task panics in `otelgoyek`.
 
 ### Removed
 
