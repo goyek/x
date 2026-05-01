@@ -33,6 +33,8 @@ and this library adheres to
 
 ### Fixed
 
+- Fix `cmd.UnsetEnv` to correctly remove environment variables that do not
+  have a value.
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
 

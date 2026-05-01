@@ -27,6 +27,9 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		a.Error("parse command line: ", err)
 		return false
 	}
+	if len(args) == 0 {
+		panic("no command provided")
+	}
 
 	cmd := exec.CommandContext(a.Context(), args[0], args[1:]...) //nolint:gosec // it is a convenient function to run programs
 	cmd.Stdin = os.Stdin
@@ -70,9 +73,10 @@ func UnsetEnv(key string) Option {
 		}
 		newEnv := make([]string, 0, len(env))
 		for _, e := range env {
-			if !strings.HasPrefix(e, prefix) {
-				newEnv = append(newEnv, e)
+			if e == key || strings.HasPrefix(e, prefix) {
+				continue
 			}
+			newEnv = append(newEnv, e)
 		}
 		cmd.Env = newEnv
 	}

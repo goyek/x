@@ -34,6 +34,31 @@ func TestUnsetEnv(t *testing.T) {
 	}
 }
 
+func TestUnsetEnv_NoValue(t *testing.T) {
+	a := &goyek.A{}
+	cmd := &exec.Cmd{
+		Env: []string{"FOO", "BAR=baz"},
+	}
+
+	UnsetEnv("FOO")(a, cmd)
+
+	for _, e := range cmd.Env {
+		if e == "FOO" {
+			t.Errorf("expected FOO to be unset")
+		}
+	}
+	found := false
+	for _, e := range cmd.Env {
+		if e == "BAR=baz" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected BAR=baz to be preserved")
+	}
+}
+
 func TestUnsetEnv_Nil(t *testing.T) {
 	t.Setenv("GOYEK_TEST_VAR", "present")
 	a := &goyek.A{}
@@ -131,4 +156,22 @@ func TestExec_UnsetEnv(t *testing.T) {
 	if !strings.Contains(got, "ANOTHER_VAR=stay") {
 		t.Error("ANOTHER_VAR should still be present")
 	}
+}
+
+func TestExec_NoCommand(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Exec did not panic when no command was provided")
+		}
+	}()
+	Exec(&goyek.A{}, "")
+}
+
+func TestExec_EnvOnly(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Exec did not panic when only env vars were provided")
+		}
+	}()
+	Exec(&goyek.A{}, "FOO=bar")
 }
