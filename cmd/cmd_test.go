@@ -34,6 +34,26 @@ func TestUnsetEnv(t *testing.T) {
 	}
 }
 
+func TestEnv_Inheritance(t *testing.T) {
+	t.Setenv("PARENT_VAR", "parent-value")
+	a := &goyek.A{}
+	cmd := &exec.Cmd{} // Env is nil
+
+	Env("NEW_VAR", "new-value")(a, cmd)
+
+	foundParent := false
+	for _, e := range cmd.Env {
+		if strings.HasPrefix(e, "PARENT_VAR=") {
+			foundParent = true
+			break
+		}
+	}
+
+	if !foundParent {
+		t.Error("expected PARENT_VAR to be inherited when using Env option on a nil-Env Cmd")
+	}
+}
+
 func TestUnsetEnv_NoValue(t *testing.T) {
 	a := &goyek.A{}
 	cmd := &exec.Cmd{
@@ -131,6 +151,53 @@ func TestExec_ClearEnv_WithEnv(t *testing.T) {
 
 	if strings.Contains(got, "GOYEK_HIDDEN=") {
 		t.Error("GOYEK_HIDDEN should not be present")
+	}
+}
+
+func TestExec_ClearEnv_WithInlineEnv(t *testing.T) {
+	t.Setenv("GOYEK_HIDDEN", "secret")
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "INLINE_VAR=inline env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "INLINE_VAR=inline") {
+		t.Error("INLINE_VAR=inline should be present even if environment was cleared by option")
+	}
+
+	if strings.Contains(got, "GOYEK_HIDDEN=") {
+		t.Error("GOYEK_HIDDEN should not be present")
+	}
+}
+
+func TestExec_EnvOption_WithInlineEnv(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "VAR=inline env", Env("VAR", "option"), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	// Both will be present in cmd.Env, but the last one wins in most OSes
+	// and cmd.Env is usually processed from first to last.
+	// Actually, exec.Cmd.Env says "If Env contains duplicate environment keys, only the last value in the slice for each duplicate key is used."
+	if !strings.Contains(got, "VAR=inline") {
+		t.Error("VAR=inline should be present")
+	}
+	if strings.HasSuffix(strings.TrimSpace(got), "VAR=option") {
+		t.Error("VAR=inline should override VAR=option")
 	}
 }
 

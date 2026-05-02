@@ -30,11 +30,15 @@ and this library adheres to
 
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
+- Improve `cmd.Exec` to ensure environment variables from command line string
+  override those from options.
 
 ### Fixed
 
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
+- Fix `cmd.Env` to preserve environment inheritance when used on a command
+  with uninitialized environment.
 
 ### Removed
 
