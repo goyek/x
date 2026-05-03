@@ -33,6 +33,11 @@ and this library adheres to
 
 ### Fixed
 
+- Fix `cmd.Env` and `cmd.UnsetEnv` to ensure environment inheritance when
+  initializing `cmd.Env`.
+- Fix `cmd.Exec` to ensure inline environment variables have highest precedence
+  and are not cleared by options.
+- Fix `otelgoyek` to set span status to error when a task panics.
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
 
