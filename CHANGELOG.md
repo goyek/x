@@ -30,6 +30,10 @@ and this library adheres to
 
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
+- Improve environment variables handling in `cmd.Exec` to ensure inline
+  variables have the highest precedence and are not affected by `cmd.ClearEnv`.
+- Improve `cmd.Env` option to ensure environment inheritance if `cmd.Env`
+  is `nil`.
 
 ### Fixed
 
