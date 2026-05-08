@@ -175,3 +175,63 @@ func TestExec_EnvOnly(t *testing.T) {
 	}()
 	Exec(&goyek.A{}, "FOO=bar")
 }
+
+func TestEnv_Inheritance(t *testing.T) {
+	t.Setenv("GOYEK_TEST_VAR", "present")
+	a := &goyek.A{}
+	cmd := &exec.Cmd{
+		Env: nil,
+	}
+
+	Env("NEW_VAR", "value")(a, cmd)
+
+	if cmd.Env == nil {
+		t.Error("expected Env not to be nil")
+	}
+	found := false
+	for _, e := range cmd.Env {
+		if strings.HasPrefix(e, "GOYEK_TEST_VAR=") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected GOYEK_TEST_VAR to be inherited")
+	}
+}
+
+func TestExec_InlineEnvPrecedence(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "FOO=inline env", Env("FOO", "option"), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "FOO=inline") {
+		t.Errorf("FOO should be 'inline', but got: %s", got)
+	}
+}
+
+func TestExec_ClearEnv_WithInlineEnv(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "FOO=inline env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "FOO=inline") {
+		t.Errorf("FOO should be 'inline' even with ClearEnv, but got: %s", got)
+	}
+}
