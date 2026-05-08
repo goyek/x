@@ -25,6 +25,8 @@ and this library adheres to
   environment variables.
 - Add `cmd.ClearEnv` option to prevent environment inheritance in `cmd.Exec`.
 - Add `cmd.UnsetEnv` option to remove a specific environment variable in `cmd.Exec`.
+- Improve `cmd.Env` to ensure environment inheritance.
+- Change `cmd.Exec` to ensure inline environment variables have the highest precedence.
 
 ### Changed
 
