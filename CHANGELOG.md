@@ -28,6 +28,9 @@ and this library adheres to
 
 ### Changed
 
+- Change `cmd.Exec` to ensure inline environment variables have the highest precedence.
+- Improve `cmd.Env` and `cmd.UnsetEnv` to maintain environment inheritance.
+
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
 
