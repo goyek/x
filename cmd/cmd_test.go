@@ -175,3 +175,57 @@ func TestExec_EnvOnly(t *testing.T) {
 	}()
 	Exec(&goyek.A{}, "FOO=bar")
 }
+
+func TestExec_ClearEnv_InlineEnv(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			// We want to clear the inherited env but keep the inline one
+			Exec(a, "GOYEK_INLINE=present env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "GOYEK_INLINE=present") {
+		t.Errorf("GOYEK_INLINE=present should be present in the output, but got:\n%s", got)
+	}
+}
+
+func TestEnv_NilInheritance(t *testing.T) {
+	t.Setenv("GOYEK_EXPECTED", "should-stay")
+	f := &goyek.Flow{}
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			// Adding one env var should NOT drop the others from process environment
+			// Functional options are applied to &exec.Cmd{} which has Env = nil.
+			cmd := &exec.Cmd{}
+			Env("NEW_VAR", "value")(a, cmd)
+			if cmd.Env == nil {
+				t.Fatal("cmd.Env should not be nil after Env option")
+			}
+			foundInherited := false
+			foundNew := false
+			for _, e := range cmd.Env {
+				if e == "GOYEK_EXPECTED=should-stay" {
+					foundInherited = true
+				}
+				if e == "NEW_VAR=value" {
+					foundNew = true
+				}
+			}
+			if !foundInherited {
+				t.Error("inherited GOYEK_EXPECTED=should-stay was lost")
+			}
+			if !foundNew {
+				t.Error("new NEW_VAR=value was not added")
+			}
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+}
