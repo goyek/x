@@ -35,6 +35,8 @@ and this library adheres to
 
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
+- Fix environment variable handling in `cmd.Exec` and `cmd.Env` to ensure inherited
+  environment is preserved and inline variables have the highest precedence.
 
 ### Removed
 

@@ -36,10 +36,10 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 	cmd.Stdout = a.Output()
 	cmd.Stderr = a.Output()
 	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, envs...)
 	for _, opt := range opts {
 		opt(a, cmd)
 	}
+	cmd.Env = append(cmd.Env, envs...)
 
 	if err := cmd.Run(); err != nil {
 		a.Error(err)
@@ -58,6 +58,9 @@ func Dir(s string) Option {
 // Env is an option to set an environment variable.
 func Env(k, v string) Option {
 	return func(_ *goyek.A, cmd *exec.Cmd) {
+		if cmd.Env == nil {
+			cmd.Env = os.Environ()
+		}
 		env := k + "=" + v
 		cmd.Env = append(cmd.Env, env)
 	}
