@@ -33,8 +33,10 @@ and this library adheres to
 
 ### Fixed
 
+- Fix environment variable precedence and inheritance in `cmd.Exec`.
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
+- Fix OpenTelemetry span status when a task panics in `otelgoyek`.
 
 ### Removed
 
