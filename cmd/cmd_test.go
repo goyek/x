@@ -134,6 +134,44 @@ func TestExec_ClearEnv_WithEnv(t *testing.T) {
 	}
 }
 
+func TestEnv_NilInheritance(t *testing.T) {
+	t.Setenv("PARENT_VAR", "parent-value")
+	a := &goyek.A{}
+	cmd := &exec.Cmd{}
+
+	Env("NEW_VAR", "new-value")(a, cmd)
+
+	foundParent := false
+	for _, e := range cmd.Env {
+		if e == "PARENT_VAR=parent-value" {
+			foundParent = true
+			break
+		}
+	}
+
+	if !foundParent {
+		t.Error("expected PARENT_VAR to be inherited, but it was lost")
+	}
+}
+
+func TestExec_ClearEnv_InlineEnv(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "FOO=bar env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "FOO=bar") {
+		t.Error("FOO=bar should be present even if ClearEnv() was used")
+	}
+}
+
 func TestExec_UnsetEnv(t *testing.T) {
 	t.Setenv("GOYEK_TEST_VAR", "present")
 	t.Setenv("ANOTHER_VAR", "stay")
