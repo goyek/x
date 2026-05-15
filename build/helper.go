@@ -17,7 +17,7 @@ func runExec(a *goyek.A, cmdLine string, opts ...cmd.Option) bool {
 	if err == nil && len(envs) > 0 {
 		var sb strings.Builder
 		for _, env := range envs {
-			if split := strings.SplitN(env, "=", 2); len(split) == 2 {
+			if split := strings.SplitN(env, "=", 2); len(split) == 2 { //nolint:mnd // splitting key=value
 				sb.WriteString(split[0])
 				sb.WriteString("=[MASKED] ")
 			}
