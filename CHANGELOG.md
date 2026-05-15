@@ -33,6 +33,7 @@ and this library adheres to
 
 ### Fixed
 
+- Mask sensitive inline environment variables in `runExec` logs.
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
 

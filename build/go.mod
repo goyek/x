@@ -9,6 +9,7 @@ require (
 	github.com/golangci/golangci-lint/v2 v2.11.4
 	github.com/goyek/goyek/v3 v3.0.1
 	github.com/goyek/x v0.0.0-00010101000000-000000000000
+	github.com/mattn/go-shellwords v1.0.13
 )
 
 require (
@@ -136,7 +137,6 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/mattn/go-shellwords v1.0.13 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mgechev/revive v1.15.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
