@@ -57,8 +57,8 @@ func Mask(cmdLine string) string {
 	}
 	newEnvs := make([]string, 0, len(envs))
 	for _, env := range envs {
-		split := strings.SplitN(env, "=", 2)
-		if len(split) == 2 {
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // environment variable is k=v
+		if len(split) == 2 {                 //nolint:mnd // environment variable is k=v
 			newEnvs = append(newEnvs, split[0]+"=[MASKED]")
 		} else {
 			newEnvs = append(newEnvs, env)
