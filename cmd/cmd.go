@@ -56,8 +56,8 @@ func Mask(cmdLine string) string {
 	}
 	maskedEnvs := make([]string, len(envs))
 	for i, env := range envs {
-		split := strings.SplitN(env, "=", 2)
-		if len(split) == 2 {
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // environment variable assignment
+		if len(split) == 2 {                 //nolint:mnd // environment variable assignment
 			maskedEnvs[i] = split[0] + "=[MASKED]"
 		} else {
 			maskedEnvs[i] = env
