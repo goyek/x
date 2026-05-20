@@ -48,6 +48,25 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 	return true
 }
 
+// Mask returns the command line with masked environment variables.
+// It is useful for logging the command line without leaking secrets.
+//
+// Example usage:
+//
+//	cmd.Mask("FOO=foo BAR=baz ./foo") // returns "FOO=[MASKED] BAR=[MASKED] ./foo"
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || len(envs) == 0 {
+		return cmdLine
+	}
+	newEnvs := make([]string, len(envs))
+	for i, env := range envs {
+		kv := strings.SplitN(env, "=", 2)
+		newEnvs[i] = kv[0] + "=[MASKED]"
+	}
+	return strings.Join(append(newEnvs, args...), " ")
+}
+
 // Dir is an option to set the working directory.
 func Dir(s string) Option {
 	return func(_ *goyek.A, cmd *exec.Cmd) {
