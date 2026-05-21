@@ -21,6 +21,7 @@ type Option func(a *goyek.A, cmd *exec.Cmd)
 //	cmd.Exec(a, "FOO=foo BAR=baz ./foo --bar=baz", cmd.Dir("pkg"))
 func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 	a.Helper()
+	a.Log("Exec: ", Mask(cmdLine))
 
 	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
 	if err != nil {
@@ -46,6 +47,21 @@ func Exec(a *goyek.A, cmdLine string, opts ...Option) bool {
 		return false
 	}
 	return true
+}
+
+// Mask replaces the values of leading environment variable assignments
+// in a command line string with [MASKED].
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || (len(envs) == 0 && len(args) == 0) {
+		return cmdLine
+	}
+	maskedEnvs := make([]string, 0, len(envs))
+	for _, env := range envs {
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // environment variable is key=value
+		maskedEnvs = append(maskedEnvs, split[0]+"=[MASKED]")
+	}
+	return strings.Join(append(maskedEnvs, args...), " ")
 }
 
 // Dir is an option to set the working directory.
