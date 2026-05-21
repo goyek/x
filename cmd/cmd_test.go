@@ -175,3 +175,54 @@ func TestExec_EnvOnly(t *testing.T) {
 	}()
 	Exec(&goyek.A{}, "FOO=bar")
 }
+
+func TestMask(t *testing.T) {
+	tests := []struct {
+		name    string
+		cmdLine string
+		want    string
+	}{
+		{
+			name:    "no env vars",
+			cmdLine: "echo hello world",
+			want:    "echo hello world",
+		},
+		{
+			name:    "one env var",
+			cmdLine: "SECRET=password echo hello",
+			want:    "SECRET=[MASKED] echo hello",
+		},
+		{
+			name:    "multiple env vars",
+			cmdLine: "FOO=bar BAZ=qux ./cmd --arg=val",
+			want:    "FOO=[MASKED] BAZ=[MASKED] ./cmd --arg=val",
+		},
+		{
+			name:    "env var with no value",
+			cmdLine: "EMPTY= echo hello",
+			want:    "EMPTY=[MASKED] echo hello",
+		},
+		{
+			name:    "complex command",
+			cmdLine: "VAR=val ./script.sh 'arg with space' \"another arg\"",
+			want:    "VAR=[MASKED] ./script.sh arg with space another arg",
+		},
+		{
+			name:    "malformed",
+			cmdLine: "VAR='unclosed quote",
+			want:    "VAR='unclosed quote",
+		},
+		{
+			name:    "empty",
+			cmdLine: "",
+			want:    "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Mask(tt.cmdLine); got != tt.want {
+				t.Errorf("Mask() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
