@@ -35,42 +35,42 @@ func (l *CodeLineLogger) Logf(w io.Writer, format string, args ...interface{}) {
 func (l *CodeLineLogger) Error(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Errorf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Errorf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Fatal is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatal(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Fatalf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatalf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Skip is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skip(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt)
+	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Skipf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skipf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt)
+	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
 }
 
 // Helper marks the calling function as a helper function.

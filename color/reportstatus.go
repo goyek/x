@@ -16,7 +16,7 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		c := color.New(color.FgBlue)
 
 		// report start task
-		c.Fprintf(in.Output, "===== TASK  %s\n", in.TaskName)
+		c.Fprintf(in.Output, "===== TASK  %s\n", in.TaskName) //nolint:errcheck // not checking errors when writing to output
 		start := time.Now()
 
 		// run
@@ -35,17 +35,17 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		case goyek.StatusNotRun:
 			status = "NOOP"
 		}
-		c.Fprintf(in.Output, "----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds())
+		c.Fprintf(in.Output, "----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds()) //nolint:errcheck // not checking errors when writing to output
 
 		// report panic if happened
 		if res.PanicStack != nil {
 			if res.PanicValue != nil {
-				c.Fprintf(in.Output, "panic: %v", res.PanicValue)
+				c.Fprintf(in.Output, "panic: %v", res.PanicValue) //nolint:errcheck // not checking errors when writing to output
 			} else {
-				c.Fprint(in.Output, "panic(nil) or runtime.Goexit() called")
+				c.Fprint(in.Output, "panic(nil) or runtime.Goexit() called") //nolint:errcheck // not checking errors when writing to output
 			}
-			io.WriteString(in.Output, "\n\n") //nolint:errcheck // not checking errors when writing to output
-			c.Fprintf(in.Output, "%s", res.PanicStack)
+			io.WriteString(in.Output, "\n\n")                        //nolint:errcheck // not checking errors when writing to output
+			c.Fprintf(in.Output, "%s", res.PanicStack)               //nolint:errcheck // not checking errors when writing to output
 		}
 
 		return res
