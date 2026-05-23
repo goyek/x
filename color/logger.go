@@ -35,42 +35,42 @@ func (l *CodeLineLogger) Logf(w io.Writer, format string, args ...interface{}) {
 func (l *CodeLineLogger) Error(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Errorf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Errorf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Fatal is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatal(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Fatalf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatalf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgRed).Fprint(w, txt)
 }
 
 // Skip is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skip(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgYellow).Fprint(w, txt)
 }
 
 // Skipf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skipf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt) //nolint:errcheck // not checking errors when writing to output
+	color.New(color.FgYellow).Fprint(w, txt)
 }
 
 // Helper marks the calling function as a helper function.
