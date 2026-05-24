@@ -25,6 +25,9 @@ and this library adheres to
   environment variables.
 - Add `cmd.ClearEnv` option to prevent environment inheritance in `cmd.Exec`.
 - Add `cmd.UnsetEnv` option to remove a specific environment variable in `cmd.Exec`.
+- Add `cmd.Mask` function that replaces the values of leading environment variable
+  assignments in a command line string with `[MASKED]` to prevent secret leakage
+  in logs.
 
 ### Changed
 
