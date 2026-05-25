@@ -119,7 +119,7 @@ func Mask(cmdLine string) string {
 	}
 	var sb strings.Builder
 	for _, env := range envs {
-		split := strings.SplitN(env, "=", 2)
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // split into key and value
 		sb.WriteString(split[0])
 		sb.WriteString("=[MASKED] ")
 	}
