@@ -16,11 +16,13 @@ import (
 	"github.com/goyek/x/otelgoyek"
 )
 
-const attrTaskOutput = "goyek.task.output"
-const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
-const spanNameExecute = "Execute"
-const taskNameTest = "test"
-const taskNamePanic = "panic"
+const (
+	attrTaskOutput  = "goyek.task.output"
+	traceparent     = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+	spanNameExecute = "Execute"
+	taskNameTest    = "test"
+	taskNamePanic   = "panic"
+)
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -133,7 +135,7 @@ func TestExecutorMiddleware_ErrorTruncation(t *testing.T) {
 	)
 
 	next := func(_ goyek.ExecuteInput) error {
-		return fmt.Errorf("1234567890")
+		return errors.New("1234567890")
 	}
 
 	executor := mw(next)

@@ -56,7 +56,7 @@ func Mask(cmdLine string) string {
 	}
 	masked := make([]string, 0, len(envs)+len(args))
 	for _, env := range envs {
-		split := strings.SplitN(env, "=", 2)
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // split into key and value
 		masked = append(masked, split[0]+"=[MASKED]")
 	}
 	for _, arg := range args {
