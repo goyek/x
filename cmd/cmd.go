@@ -109,3 +109,26 @@ func Stderr(w io.Writer) Option {
 		cmd.Stderr = w
 	}
 }
+
+// Mask returns the command line with leading environment variable values masked.
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || (len(envs) == 0 && len(args) == 0) {
+		return cmdLine
+	}
+
+	masked := make([]string, 0, len(envs)+len(args))
+	for _, env := range envs {
+		split := strings.SplitN(env, "=", 2) //nolint:mnd // environment variable key-value pair
+		masked = append(masked, split[0]+"=[MASKED]")
+	}
+
+	for _, arg := range args {
+		if strings.Contains(arg, " ") {
+			arg = "'" + arg + "'"
+		}
+		masked = append(masked, arg)
+	}
+
+	return strings.Join(masked, " ")
+}
