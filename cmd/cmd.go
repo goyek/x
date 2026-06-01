@@ -11,6 +11,35 @@ import (
 	"github.com/mattn/go-shellwords"
 )
 
+// Mask replaces the values of the leading environment variables with [MASKED].
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || len(envs) == 0 {
+		return cmdLine
+	}
+
+	var sb strings.Builder
+	for _, env := range envs {
+		key, _, _ := strings.Cut(env, "=")
+		sb.WriteString(key)
+		sb.WriteString("=[MASKED] ")
+	}
+
+	for i, arg := range args {
+		if i > 0 {
+			sb.WriteByte(' ')
+		}
+		if strings.Contains(arg, " ") {
+			sb.WriteByte('"')
+			sb.WriteString(arg)
+			sb.WriteByte('"')
+		} else {
+			sb.WriteString(arg)
+		}
+	}
+	return sb.String()
+}
+
 // Option configures the command.
 type Option func(a *goyek.A, cmd *exec.Cmd)
 
