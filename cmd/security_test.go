@@ -50,3 +50,59 @@ func TestLogging_Security(t *testing.T) {
 		t.Errorf("Inline secret was logged: %s", got)
 	}
 }
+
+func TestMask(t *testing.T) {
+	tests := []struct {
+		name    string
+		cmdLine string
+		want    string
+	}{
+		{
+			name:    "empty",
+			cmdLine: "",
+			want:    "",
+		},
+		{
+			name:    "no env",
+			cmdLine: "echo hello",
+			want:    "echo hello",
+		},
+		{
+			name:    "single env",
+			cmdLine: "FOO=bar echo hello",
+			want:    "FOO=[MASKED] echo hello",
+		},
+		{
+			name:    "multiple envs",
+			cmdLine: "FOO=bar BAZ=qux echo hello",
+			want:    "FOO=[MASKED] BAZ=[MASKED] echo hello",
+		},
+		{
+			name:    "env with spaces",
+			cmdLine: "FOO=\"bar baz\" echo hello",
+			want:    "FOO=[MASKED] echo hello",
+		},
+		{
+			name:    "args with spaces",
+			cmdLine: "echo \"hello world\"",
+			want:    "echo \"hello world\"",
+		},
+		{
+			name:    "complex",
+			cmdLine: "FOO=bar BAZ=\"qux quux\" ./cmd --flag=\"some value\"",
+			want:    "FOO=[MASKED] BAZ=[MASKED] ./cmd \"--flag=some value\"",
+		},
+		{
+			name:    "invalid",
+			cmdLine: "FOO='bar",
+			want:    "FOO='bar",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Mask(tt.cmdLine); got != tt.want {
+				t.Errorf("Mask() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
