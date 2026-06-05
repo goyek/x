@@ -14,6 +14,38 @@ import (
 // Option configures the command.
 type Option func(a *goyek.A, cmd *exec.Cmd)
 
+// Mask replaces the values of leading environment variable assignments in a command line string with [MASKED].
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || len(envs) == 0 {
+		return cmdLine
+	}
+
+	var sb strings.Builder
+	for i, env := range envs {
+		if i > 0 {
+			sb.WriteByte(' ')
+		}
+		k, _, _ := strings.Cut(env, "=")
+		sb.WriteString(k)
+		sb.WriteString("=[MASKED]")
+	}
+
+	for _, arg := range args {
+		if sb.Len() > 0 {
+			sb.WriteByte(' ')
+		}
+		if strings.Contains(arg, " ") {
+			sb.WriteByte('"')
+			sb.WriteString(arg)
+			sb.WriteByte('"')
+		} else {
+			sb.WriteString(arg)
+		}
+	}
+	return sb.String()
+}
+
 // Exec runs the command.
 // It calls a.Error[f] and returns false in case of any problems.
 // Example usage:
