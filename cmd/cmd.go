@@ -89,6 +89,37 @@ func ClearEnv() Option {
 	}
 }
 
+// Mask returns the command line with masked environment variables.
+func Mask(cmdLine string) string {
+	envs, args, err := shellwords.ParseWithEnvs(cmdLine)
+	if err != nil || (len(envs) == 0 && len(args) == 0) {
+		return cmdLine
+	}
+
+	var sb strings.Builder
+	for _, env := range envs {
+		if sb.Len() > 0 {
+			sb.WriteByte(' ')
+		}
+		key, _, _ := strings.Cut(env, "=")
+		sb.WriteString(key)
+		sb.WriteString("=[MASKED]")
+	}
+	for _, arg := range args {
+		if sb.Len() > 0 {
+			sb.WriteByte(' ')
+		}
+		if strings.Contains(arg, " ") {
+			sb.WriteByte('"')
+			sb.WriteString(arg)
+			sb.WriteByte('"')
+		} else {
+			sb.WriteString(arg)
+		}
+	}
+	return sb.String()
+}
+
 // Stdin is an option to set the standard input.
 func Stdin(r io.Reader) Option {
 	return func(_ *goyek.A, cmd *exec.Cmd) {
