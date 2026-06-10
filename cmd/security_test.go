@@ -29,10 +29,7 @@ func TestLogging_Security(t *testing.T) {
 		},
 	})
 
-	oldFlow := goyek.DefaultFlow
-	defer func() { goyek.DefaultFlow = oldFlow }()
-	goyek.DefaultFlow = f
-	goyek.Use(mw)
+	f.Use(mw)
 
 	_ = f.Execute(context.Background(), []string{"test"})
 
