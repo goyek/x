@@ -78,6 +78,31 @@ func TestUnsetEnv_Nil(t *testing.T) {
 	}
 }
 
+func TestEnv_Inheritance(t *testing.T) {
+	t.Setenv("GOYEK_TEST_VAR", "present")
+	a := &goyek.A{}
+	cmd := &exec.Cmd{}
+
+	Env("NEW_VAR", "value")(a, cmd)
+
+	foundInherited := false
+	foundNew := false
+	for _, e := range cmd.Env {
+		if strings.HasPrefix(e, "GOYEK_TEST_VAR=") {
+			foundInherited = true
+		}
+		if e == "NEW_VAR=value" {
+			foundNew = true
+		}
+	}
+	if !foundInherited {
+		t.Error("inherited environment lost")
+	}
+	if !foundNew {
+		t.Error("NEW_VAR=value not found")
+	}
+}
+
 func TestClearEnv(t *testing.T) {
 	a := &goyek.A{}
 	cmd := &exec.Cmd{
@@ -127,6 +152,29 @@ func TestExec_ClearEnv_WithEnv(t *testing.T) {
 	got := output.String()
 	if !strings.Contains(got, "NEW_VAR=value") {
 		t.Error("NEW_VAR=value should be present")
+	}
+
+	if strings.Contains(got, "GOYEK_HIDDEN=") {
+		t.Error("GOYEK_HIDDEN should not be present")
+	}
+}
+
+func TestExec_ClearEnv_WithInlineEnv(t *testing.T) {
+	t.Setenv("GOYEK_HIDDEN", "secret")
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			Exec(a, "INLINE_VAR=value env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "INLINE_VAR=value") {
+		t.Error("INLINE_VAR=value should be present even if environment was cleared")
 	}
 
 	if strings.Contains(got, "GOYEK_HIDDEN=") {

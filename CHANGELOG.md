@@ -33,6 +33,10 @@ and this library adheres to
 
 ### Fixed
 
+- Fix `cmd.Env` option to preserve environment inheritance by initializing
+  `cmd.Env` with `os.Environ()` if it is nil.
+- Fix precedence in `cmd.Exec` so that inline environment variables
+  have the highest precedence and are not cleared by `cmd.ClearEnv`.
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
 
