@@ -343,7 +343,7 @@ func TestMiddleware_CapturesConcurrentOutput(t *testing.T) {
 	var writeErr error
 	output := &strings.Builder{}
 	f := &goyek.Flow{}
-	f.SetOutput(goyek.SyncWriter(output))
+	f.SetOutput(output)
 	f.Define(goyek.Task{
 		Name: taskNameTest,
 		Action: func(a *goyek.A) {

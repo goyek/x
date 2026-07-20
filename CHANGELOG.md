@@ -32,22 +32,24 @@ and this library adheres to
   information leakage.
 - Document that `color.NoColor` changes process-wide state and must be called
   during single-threaded program setup.
-- Temporarily bump `github.com/goyek/goyek/v3` to the core concurrency-fix
+- Temporarily bump `github.com/goyek/goyek/v3` to the core output-concurrency
   commit; replace the pseudo-version with its tagged release before merging.
 
 ### Fixed
 
 - Make `otelgoyek` output replacements concurrency-safe with
-  `goyek.SyncWriter`, keeping capture and destination writes in the same order
-  for concurrent calls made through the replacement, while preserving goyek's
-  discard default for nil output destinations.
+  `goyek.SyncWriter`, keeping capture and destination writes in the same
+  per-call order for concurrent calls made through the replacement and
+  preserving discard semantics for nil destinations. Ordinary `Flow` output
+  continues to rely on the synchronization provided by `Flow.Execute`.
 - Prevent ANSI escape sequences in colored task, flow, and logger output from
   being interleaved by concurrent records.
+- Treat nil output as `io.Discard` in colored reporting middleware.
 - Fix `color.CodeLineLogger` caller attribution when a task action marks itself
   as a helper.
 - Make `boot` usage consistently use the current goyek output writer.
-- Fix the `otelgoyek` example's signal notification leak and avoid writing
-  through a retained, unsynchronized output writer.
+- Fix the `otelgoyek` example's signal notification leak and let
+  `Flow.Execute` own output synchronization.
 
 ### Removed
 

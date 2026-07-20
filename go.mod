@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/fatih/color v1.19.0
-	github.com/goyek/goyek/v3 v3.0.2-0.20260720150603-a55e594a46e6
+	github.com/goyek/goyek/v3 v3.0.2-0.20260720175229-784b46a80940
 	github.com/mattn/go-shellwords v1.0.13
 	go.opentelemetry.io/contrib/propagators/envcar v0.69.0
 	go.opentelemetry.io/otel v1.44.0

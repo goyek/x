@@ -12,10 +12,12 @@ import (
 // The format is based on the reports provided by the Go test runner.
 func ReportStatus(next goyek.Runner) goyek.Runner {
 	return func(in goyek.Input) goyek.Result {
+		out := outputOrDiscard(in.Output)
+		in.Output = out
 		c := color.New(color.FgBlue)
 
 		// report start task
-		writeString(in.Output, c.Sprintf("===== TASK  %s\n", in.TaskName))
+		writeString(out, c.Sprintf("===== TASK  %s\n", in.TaskName))
 		start := time.Now()
 
 		// run
@@ -34,7 +36,7 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		case goyek.StatusNotRun:
 			status = "NOOP"
 		}
-		writeString(in.Output, c.Sprintf("----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds()))
+		writeString(out, c.Sprintf("----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds()))
 
 		// report panic if happened
 		if res.PanicStack != nil {
@@ -45,7 +47,7 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 				panicHeader = c.Sprint("panic(nil) or runtime.Goexit() called")
 			}
 			panicStack := c.Sprintf("%s", res.PanicStack)
-			writeString(in.Output, panicHeader+"\n\n"+panicStack)
+			writeString(out, panicHeader+"\n\n"+panicStack)
 		}
 
 		return res

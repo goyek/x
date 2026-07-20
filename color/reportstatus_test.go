@@ -2,6 +2,7 @@ package color_test
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 	"sync"
@@ -48,6 +49,23 @@ func TestReportStatusWritesAtomicColoredRecords(t *testing.T) {
 				t.Errorf("unexpected task-status record: %q", writes[1])
 			}
 		})
+	}
+}
+
+func TestReportStatusNilOutput(t *testing.T) {
+	var gotOutput io.Writer
+	runner := goyekcolor.ReportStatus(func(in goyek.Input) goyek.Result {
+		gotOutput = in.Output
+		return goyek.Result{Status: goyek.StatusPassed}
+	})
+
+	result := runner(goyek.Input{TaskName: "task"})
+
+	if result.Status != goyek.StatusPassed {
+		t.Fatalf("got status %v, want %v", result.Status, goyek.StatusPassed)
+	}
+	if gotOutput != io.Discard {
+		t.Fatalf("next runner received %T output, want io.Discard", gotOutput)
 	}
 }
 

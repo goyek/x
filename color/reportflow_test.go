@@ -2,6 +2,7 @@ package color_test
 
 import (
 	"errors"
+	"io"
 	"strings"
 	"sync"
 	"testing"
@@ -67,5 +68,20 @@ func TestReportFlowConcurrentRecordsAreAtomic(t *testing.T) {
 	}
 	if !gotPass || !gotFail {
 		t.Errorf("got pass=%t and fail=%t, want both records", gotPass, gotFail)
+	}
+}
+
+func TestReportFlowNilOutput(t *testing.T) {
+	var gotOutput io.Writer
+	executor := goyekcolor.ReportFlow(func(in goyek.ExecuteInput) error {
+		gotOutput = in.Output
+		return nil
+	})
+
+	if err := executor(goyek.ExecuteInput{}); err != nil {
+		t.Fatalf("executor returned error: %v", err)
+	}
+	if gotOutput != io.Discard {
+		t.Fatalf("next executor received %T output, want io.Discard", gotOutput)
 	}
 }

@@ -55,7 +55,7 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	goyek.UseExecutor(otelgoyek.ExecutorMiddleware())
 
 	// Run the tasks.
-	goyek.SetOutput(goyek.SyncWriter(w))
+	goyek.SetOutput(w)
 	return goyek.Execute(ctx, tasks)
 }
 
@@ -68,7 +68,7 @@ func Example() {
 	/*
 		$ go run .
 		===== TASK  hi
-		      main.go:45: Hello world!
+		      main.go:41: Hello world!
 		----- PASS: hi (0.00s)
 		ok      0.000s
 		{
@@ -102,7 +102,7 @@ func Example() {
 		                        "Key": "goyek.task.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "      main.go:45: Hello world!\n"
+		                                "Value": "      main.go:41: Hello world!\n"
 		                        }
 		                },
 		                {
@@ -204,7 +204,7 @@ func Example() {
 		                        "Key": "goyek.flow.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "===== TASK  hi\n      main.go:45: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
+		                                "Value": "===== TASK  hi\n      main.go:41: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
 		                        }
 		                }
 		        ],

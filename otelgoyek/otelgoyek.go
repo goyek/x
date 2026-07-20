@@ -26,8 +26,10 @@ const (
 	instrumentationVersion = "0.2.0"
 )
 
-// Middleware returns a [goyek.Middleware] which adds
-// OpenTelemetry tracing instrumentation to task run.
+// Middleware returns a [goyek.Middleware] which adds OpenTelemetry tracing
+// instrumentation to a task run. Output capture includes writes made through
+// the replacement writer while the next runner executes; retained aliases and
+// direct writes to the original destination are not captured.
 func Middleware(opts ...Option) goyek.Middleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
@@ -41,7 +43,10 @@ func Middleware(opts ...Option) goyek.Middleware {
 }
 
 // ExecutorMiddleware returns a [goyek.ExecutorMiddleware] which adds
-// OpenTelemetry tracing instrumentation to flow execution.
+// OpenTelemetry tracing instrumentation to flow execution. Output capture
+// includes writes made through the replacement writer while the next executor
+// runs. Output that bypasses the replacement, including [goyek.Flow.Main] usage
+// text and termination-signal diagnostics, is not captured.
 func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
