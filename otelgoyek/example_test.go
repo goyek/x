@@ -55,7 +55,7 @@ func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
 	goyek.UseExecutor(otelgoyek.ExecutorMiddleware())
 
 	// Run the tasks.
-	goyek.SetOutput(w)
+	goyek.SetOutput(goyek.SyncWriter(w))
 	return goyek.Execute(ctx, tasks)
 }
 

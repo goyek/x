@@ -343,7 +343,7 @@ func TestMiddleware_CapturesConcurrentOutput(t *testing.T) {
 	var writeErr error
 	output := &strings.Builder{}
 	f := &goyek.Flow{}
-	f.SetOutput(output)
+	f.SetOutput(goyek.SyncWriter(output))
 	f.Define(goyek.Task{
 		Name: taskNameTest,
 		Action: func(a *goyek.A) {
@@ -364,8 +364,30 @@ func TestMiddleware_CapturesConcurrentOutput(t *testing.T) {
 		t.Fatalf("expected 1 span, got %d", len(spans))
 	}
 	captured := attributeValue(t, spans[0], attrTaskOutput)
+	if destination := output.String(); captured != destination {
+		t.Fatalf("captured output does not match destination output\ncaptured:    %q\ndestination: %q", captured, destination)
+	}
 	assertConcurrentRecords(t, captured, "task")
-	assertConcurrentRecords(t, output.String(), "task")
+}
+
+func TestMiddleware_CapturesOutputWithNilDestination(t *testing.T) {
+	exp, tp := setupOTel()
+	runner := otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp))(goyek.NewRunner(func(a *goyek.A) {
+		fmt.Fprint(a.Output(), "task output")
+	}))
+
+	result := runner(goyek.Input{Context: context.Background(), TaskName: taskNameTest})
+	if result.Status != goyek.StatusPassed {
+		t.Fatalf("runner() status = %s, want PASS", result.Status)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	if got := attributeValue(t, spans[0], attrTaskOutput); got != "task output" {
+		t.Errorf("captured output = %q, want %q", got, "task output")
+	}
 }
 
 func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
@@ -415,7 +437,7 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 
 func TestExecutorMiddleware_CapturesConcurrentOutput(t *testing.T) {
 	exp, tp := setupOTel()
-	output := &lockedBuilder{}
+	output := &strings.Builder{}
 	mw := otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp))
 	executor := mw(func(in goyek.ExecuteInput) error {
 		return writeConcurrentRecords(in.Output, "flow")
@@ -424,7 +446,7 @@ func TestExecutorMiddleware_CapturesConcurrentOutput(t *testing.T) {
 	if err := executor(goyek.ExecuteInput{
 		Context: context.Background(),
 		Tasks:   []string{taskNameTest},
-		Output:  output,
+		Output:  goyek.SyncWriter(output),
 	}); err != nil {
 		t.Fatalf("executor() error = %v", err)
 	}
@@ -434,8 +456,30 @@ func TestExecutorMiddleware_CapturesConcurrentOutput(t *testing.T) {
 		t.Fatalf("expected 1 span, got %d", len(spans))
 	}
 	captured := attributeValue(t, spans[0], "goyek.flow.output")
+	if destination := output.String(); captured != destination {
+		t.Fatalf("captured output does not match destination output\ncaptured:    %q\ndestination: %q", captured, destination)
+	}
 	assertConcurrentRecords(t, captured, "flow")
-	assertConcurrentRecords(t, output.String(), "flow")
+}
+
+func TestExecutorMiddleware_CapturesOutputWithNilDestination(t *testing.T) {
+	exp, tp := setupOTel()
+	executor := otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp))(func(in goyek.ExecuteInput) error {
+		_, err := io.WriteString(in.Output, "flow output")
+		return err
+	})
+
+	if err := executor(goyek.ExecuteInput{Context: context.Background(), Tasks: []string{taskNameTest}}); err != nil {
+		t.Fatalf("executor() error = %v", err)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	if got := attributeValue(t, spans[0], "goyek.flow.output"); got != "flow output" {
+		t.Errorf("captured output = %q, want %q", got, "flow output")
+	}
 }
 
 func TestExecutorMiddleware_WithDisableOutput_StatusLeak(t *testing.T) {
@@ -595,23 +639,6 @@ func attributeValue(t *testing.T, span tracetest.SpanStub, key string) string {
 	}
 	t.Fatalf("%s attribute not found", key)
 	return ""
-}
-
-type lockedBuilder struct {
-	mu      sync.Mutex
-	builder strings.Builder
-}
-
-func (w *lockedBuilder) Write(p []byte) (int, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	return w.builder.Write(p)
-}
-
-func (w *lockedBuilder) String() string {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	return w.builder.String()
 }
 
 func useTraceContextPropagator(t *testing.T) {

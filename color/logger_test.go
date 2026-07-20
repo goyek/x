@@ -100,7 +100,7 @@ func TestCodeLineLoggerHelperAttribution(t *testing.T) {
 		logFromHelper(a)
 	})
 
-	runner(goyek.Input{Output: out, Logger: logger})
+	runner(goyek.Input{Output: goyek.SyncWriter(out), Logger: logger})
 
 	if !strings.Contains(out.String(), wantLocation+": message from helper") {
 		t.Errorf("output %q does not attribute helper log to %s", out.String(), wantLocation)
@@ -119,7 +119,7 @@ func TestCodeLineLoggerHelperInActionAttribution(t *testing.T) {
 		a.Log("message from action")
 	})
 
-	runner(goyek.Input{Output: out, Logger: logger})
+	runner(goyek.Input{Output: goyek.SyncWriter(out), Logger: logger})
 
 	if !strings.Contains(out.String(), wantLocation+": message from action") {
 		t.Errorf("output %q does not attribute action log to %s", out.String(), wantLocation)

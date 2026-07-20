@@ -22,7 +22,7 @@ func TestUsageUsesCurrentGoyekOutput(t *testing.T) {
 	flag.CommandLine.Bool("sample", false, "sample flag")
 
 	currentOutput := &strings.Builder{}
-	goyek.SetOutput(currentOutput)
+	goyek.SetOutput(goyek.SyncWriter(currentOutput))
 
 	usage()
 

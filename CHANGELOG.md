@@ -37,8 +37,10 @@ and this library adheres to
 
 ### Fixed
 
-- Fix races in `otelgoyek` when task output is written from multiple
-  goroutines.
+- Make `otelgoyek` output replacements concurrency-safe with
+  `goyek.SyncWriter`, keeping capture and destination writes in the same order
+  for concurrent calls made through the replacement, while preserving goyek's
+  discard default for nil output destinations.
 - Prevent ANSI escape sequences in colored task, flow, and logger output from
   being interleaved by concurrent records.
 - Fix `color.CodeLineLogger` caller attribution when a task action marks itself

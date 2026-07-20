@@ -78,7 +78,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 		var lw *limitWriter
 		if !e.disableOutput {
 			lw = &limitWriter{limit: e.outputLimit}
-			in.Output = io.MultiWriter(in.Output, lw)
+			in.Output = capturedOutput(in.Output, lw)
 		}
 
 		err := next(in)
@@ -121,7 +121,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 		var lw *limitWriter
 		if !r.disableOutput {
 			lw = &limitWriter{limit: r.outputLimit}
-			in.Output = io.MultiWriter(in.Output, lw)
+			in.Output = capturedOutput(in.Output, lw)
 		}
 
 		res := next(in)
@@ -155,6 +155,13 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		return res
 	}
+}
+
+func capturedOutput(output io.Writer, capture io.Writer) io.Writer {
+	if output == nil {
+		output = io.Discard
+	}
+	return goyek.SyncWriter(io.MultiWriter(output, capture))
 }
 
 type limitWriter struct {
