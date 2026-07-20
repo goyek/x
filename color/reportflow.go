@@ -18,12 +18,12 @@ func ReportFlow(next goyek.Executor) goyek.Executor {
 		from := time.Now()
 		if err := next(in); err != nil {
 			c = c.Add(color.FgRed)
-			c.Fprintf(out, "%v\t%.3fs\n", err, time.Since(from).Seconds())
+			writeString(out, c.Sprintf("%v\t%.3fs\n", err, time.Since(from).Seconds()))
 			return err
 		}
 
 		c = c.Add(color.FgGreen)
-		c.Fprintf(out, "ok\t%.3fs\n", time.Since(from).Seconds())
+		writeString(out, c.Sprintf("ok\t%.3fs\n", time.Since(from).Seconds()))
 		return nil
 	}
 }

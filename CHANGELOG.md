@@ -30,11 +30,22 @@ and this library adheres to
 
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
+- Document that `color.NoColor` changes process-wide state and must be called
+  during single-threaded program setup.
+- Temporarily bump `github.com/goyek/goyek/v3` to the core concurrency-fix
+  commit; replace the pseudo-version with its tagged release before merging.
 
 ### Fixed
 
 - Fix races in `otelgoyek` when task output is written from multiple
   goroutines.
+- Prevent ANSI escape sequences in colored task, flow, and logger output from
+  being interleaved by concurrent records.
+- Fix `color.CodeLineLogger` caller attribution when a task action marks itself
+  as a helper.
+- Make `boot` usage consistently use the current goyek output writer.
+- Fix the `otelgoyek` example's signal notification leak and avoid writing
+  through a retained, unsynchronized output writer.
 
 ### Removed
 

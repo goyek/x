@@ -16,6 +16,8 @@ func init() {
 }
 
 // NoColor prevents colorizing the output.
+// It changes process-wide state and must be called during single-threaded
+// program setup, before any goroutine can format colored output.
 func NoColor() {
 	color.NoColor = true
 }

@@ -3,7 +3,6 @@ package otelgoyek_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -18,13 +17,10 @@ import (
 )
 
 func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
-	// Handle SIGINT (CTRL+C) gracefully.
+	// Cancel the execution on SIGINT and release the signal notification if the
+	// execution returns normally.
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	go func() {
-		<-ctx.Done()
-		fmt.Fprintln(w, "first interrupt, graceful stop")
-		stop()
-	}()
+	defer stop()
 
 	// Setup OpenTelemetry tracing pipeline.
 	traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())

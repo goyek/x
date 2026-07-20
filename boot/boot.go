@@ -94,8 +94,14 @@ func Main() {
 }
 
 func usage() {
-	fmt.Println("Usage of build: [tasks] [flags] [--] [args]")
+	out := goyek.Output()
+	// Main can replace the flow output with a synchronized writer before it
+	// invokes usage. Refresh the flag package output so it does not retain the
+	// unsynchronized writer configured before goyek.Main was called.
+	flag.CommandLine.SetOutput(out)
+
+	fmt.Fprintln(out, "Usage of build: [tasks] [flags] [--] [args]")
 	goyek.Print()
-	fmt.Println("Flags:")
+	fmt.Fprintln(out, "Flags:")
 	flag.PrintDefaults()
 }
