@@ -1,7 +1,6 @@
 package color
 
 import (
-	"io"
 	"time"
 
 	"github.com/fatih/color"
@@ -13,10 +12,12 @@ import (
 // The format is based on the reports provided by the Go test runner.
 func ReportStatus(next goyek.Runner) goyek.Runner {
 	return func(in goyek.Input) goyek.Result {
+		out := outputOrDiscard(in.Output)
+		in.Output = out
 		c := color.New(color.FgBlue)
 
 		// report start task
-		c.Fprintf(in.Output, "===== TASK  %s\n", in.TaskName)
+		writeString(out, c.Sprintf("===== TASK  %s\n", in.TaskName))
 		start := time.Now()
 
 		// run
@@ -35,17 +36,18 @@ func ReportStatus(next goyek.Runner) goyek.Runner {
 		case goyek.StatusNotRun:
 			status = "NOOP"
 		}
-		c.Fprintf(in.Output, "----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds())
+		writeString(out, c.Sprintf("----- %s: %s (%.2fs)\n", status, in.TaskName, time.Since(start).Seconds()))
 
 		// report panic if happened
 		if res.PanicStack != nil {
+			var panicHeader string
 			if res.PanicValue != nil {
-				c.Fprintf(in.Output, "panic: %v", res.PanicValue)
+				panicHeader = c.Sprintf("panic: %v", res.PanicValue)
 			} else {
-				c.Fprint(in.Output, "panic(nil) or runtime.Goexit() called")
+				panicHeader = c.Sprint("panic(nil) or runtime.Goexit() called")
 			}
-			io.WriteString(in.Output, "\n\n") //nolint:errcheck // not checking errors when writing to output
-			c.Fprintf(in.Output, "%s", res.PanicStack)
+			panicStack := c.Sprintf("%s", res.PanicStack)
+			writeString(out, panicHeader+"\n\n"+panicStack)
 		}
 
 		return res

@@ -10,7 +10,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// CodeLineLogger decorates the log with code line information, identation and colors.
+// CodeLineLogger decorates the log with code line information, indentation and colors.
 type CodeLineLogger struct {
 	mu          sync.Mutex
 	helperPCs   map[uintptr]struct{} // functions to be skipped when writing file/line info
@@ -35,42 +35,42 @@ func (l *CodeLineLogger) Logf(w io.Writer, format string, args ...interface{}) {
 func (l *CodeLineLogger) Error(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	writeString(w, color.New(color.FgRed).Sprint(txt))
 }
 
 // Errorf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Errorf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	writeString(w, color.New(color.FgRed).Sprint(txt))
 }
 
 // Fatal is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatal(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	writeString(w, color.New(color.FgRed).Sprint(txt))
 }
 
 // Fatalf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Fatalf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgRed).Fprint(w, txt)
+	writeString(w, color.New(color.FgRed).Sprint(txt))
 }
 
 // Skip is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skip(w io.Writer, args ...interface{}) {
 	txt := fmt.Sprint(args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt)
+	writeString(w, color.New(color.FgYellow).Sprint(txt))
 }
 
 // Skipf is used internally in order to provide proper prefix.
 func (l *CodeLineLogger) Skipf(w io.Writer, format string, args ...interface{}) {
 	txt := fmt.Sprintf(format, args...)
 	txt = l.decorate(txt)
-	color.New(color.FgYellow).Fprint(w, txt)
+	writeString(w, color.New(color.FgYellow).Sprint(txt))
 }
 
 // Helper marks the calling function as a helper function.
@@ -136,9 +136,8 @@ func (l *CodeLineLogger) decorate(s string) string {
 
 // frameSkip searches, starting after skip frames, for the first caller frame
 // in a function not marked as a helper and returns that frame.
-// The search stops if it finds a tRunner function that
-// was the entry point into the test and the test is not a subtest.
-// This function must be called with l.mu held.
+// The search stops when it reaches the goyek runner. This ensures that an
+// action which marks itself as a helper is still reported as the call site.
 func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 	// The maximum number of stack frames to go through when skipping helper functions for
 	// the purpose of decorating log messages.
@@ -163,7 +162,7 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 		if firstFrame.PC == 0 {
 			firstFrame = frame
 		}
-		if frame.Function == "github.com/goyek/goyek/v3.taskRunner.run.func1" {
+		if frame.Function == "github.com/goyek/goyek/v3.(*A).run.func1" {
 			// We've gone up all the way to the runner calling
 			// the action (so the user must have
 			// called a.Helper from inside that action).
@@ -189,4 +188,9 @@ func pcToName(pc uintptr) string {
 	frames := runtime.CallersFrames(pcs)
 	frame, _ := frames.Next()
 	return frame.Function
+}
+
+// writeString keeps each formatted record within one call to the destination.
+func writeString(w io.Writer, s string) {
+	_, _ = io.WriteString(w, s)
 }

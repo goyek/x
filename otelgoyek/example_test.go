@@ -3,7 +3,6 @@ package otelgoyek_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -18,11 +17,13 @@ import (
 )
 
 func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
-	// Handle SIGINT (CTRL+C) gracefully.
+	// Cancel the execution on SIGINT and restore the default signal behavior so
+	// that a second interrupt terminates the process. Always release the signal
+	// notification if the execution returns normally.
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	go func() {
-		<-ctx.Done()
-		fmt.Fprintln(w, "first interrupt, graceful stop")
+	stopOnDone := context.AfterFunc(ctx, stop)
+	defer func() {
+		stopOnDone()
 		stop()
 	}()
 
@@ -72,7 +73,7 @@ func Example() {
 	/*
 		$ go run .
 		===== TASK  hi
-		      main.go:45: Hello world!
+		      main.go:41: Hello world!
 		----- PASS: hi (0.00s)
 		ok      0.000s
 		{
@@ -106,7 +107,7 @@ func Example() {
 		                        "Key": "goyek.task.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "      main.go:45: Hello world!\n"
+		                                "Value": "      main.go:41: Hello world!\n"
 		                        }
 		                },
 		                {
@@ -208,7 +209,7 @@ func Example() {
 		                        "Key": "goyek.flow.output",
 		                        "Value": {
 		                                "Type": "STRING",
-		                                "Value": "===== TASK  hi\n      main.go:45: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
+		                                "Value": "===== TASK  hi\n      main.go:41: Hello world!\n----- PASS: hi (0.00s)\nok\t0.000s\n"
 		                        }
 		                }
 		        ],

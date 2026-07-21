@@ -33,8 +33,18 @@ and this library adheres to
 
 ### Fixed
 
-- Fix races in `otelgoyek` when task output is written from multiple
-  goroutines.
+- Make `otelgoyek` output capture safe for concurrent writes, keeping each
+  write in the same order in the destination and captured span. Capture also
+  works when no output destination is set. Regular `Flow` execution
+  synchronizes its output automatically.
+- Prevent ANSI escape sequences in colored task, flow, and logger output from
+  being interleaved by concurrent records.
+- Treat nil output as `io.Discard` in colored reporting middleware.
+- Fix `color.CodeLineLogger` caller attribution when a task action marks itself
+  as a helper.
+- Make `boot` usage consistently use the current goyek output writer.
+- Fix the `otelgoyek` example's signal notification leak and let
+  `Flow.Execute` own output synchronization.
 
 ### Removed
 

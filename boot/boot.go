@@ -94,8 +94,13 @@ func Main() {
 }
 
 func usage() {
-	fmt.Println("Usage of build: [tasks] [flags] [--] [args]")
+	out := goyek.Output()
+	// Keep flag defaults on the same current destination as the surrounding
+	// usage text.
+	flag.CommandLine.SetOutput(out)
+
+	fmt.Fprintln(out, "Usage of build: [tasks] [flags] [--] [args]")
 	goyek.Print()
-	fmt.Println("Flags:")
+	fmt.Fprintln(out, "Flags:")
 	flag.PrintDefaults()
 }

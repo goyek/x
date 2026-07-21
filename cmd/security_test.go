@@ -15,7 +15,7 @@ func TestLogging_Security(t *testing.T) {
 
 	mw := func(next goyek.Runner) goyek.Runner {
 		return func(in goyek.Input) goyek.Result {
-			in.Output = io.MultiWriter(in.Output, sb)
+			in.Output = goyek.SyncWriter(io.MultiWriter(in.Output, sb))
 			return next(in)
 		}
 	}

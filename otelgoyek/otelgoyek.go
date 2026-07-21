@@ -26,8 +26,10 @@ const (
 	instrumentationVersion = "0.2.0"
 )
 
-// Middleware returns a [goyek.Middleware] which adds
-// OpenTelemetry tracing instrumentation to task run.
+// Middleware returns a [goyek.Middleware] which adds OpenTelemetry tracing
+// instrumentation to a task run. It captures only output written through the
+// writer passed to the next runner. Writes made directly to the original output
+// writer are not captured.
 func Middleware(opts ...Option) goyek.Middleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
@@ -41,7 +43,10 @@ func Middleware(opts ...Option) goyek.Middleware {
 }
 
 // ExecutorMiddleware returns a [goyek.ExecutorMiddleware] which adds
-// OpenTelemetry tracing instrumentation to flow execution.
+// OpenTelemetry tracing instrumentation to flow execution. It captures only
+// output written through the writer passed to the next executor. Output written
+// elsewhere, including [goyek.Flow.Main] usage text and termination-signal
+// diagnostics, is not captured.
 func ExecutorMiddleware(opts ...Option) goyek.ExecutorMiddleware {
 	cfg := newConfig(opts)
 	tracer := cfg.TracerProvider.Tracer(instrumentationName, trace.WithInstrumentationVersion(instrumentationVersion))
@@ -78,7 +83,7 @@ func (e *executor) Middleware(next goyek.Executor) goyek.Executor {
 		var lw *limitWriter
 		if !e.disableOutput {
 			lw = &limitWriter{limit: e.outputLimit}
-			in.Output = io.MultiWriter(in.Output, lw)
+			in.Output = capturedOutput(in.Output, lw)
 		}
 
 		err := next(in)
@@ -121,7 +126,7 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 		var lw *limitWriter
 		if !r.disableOutput {
 			lw = &limitWriter{limit: r.outputLimit}
-			in.Output = io.MultiWriter(in.Output, lw)
+			in.Output = capturedOutput(in.Output, lw)
 		}
 
 		res := next(in)
@@ -155,6 +160,13 @@ func (r *runner) Middleware(next goyek.Runner) goyek.Runner {
 
 		return res
 	}
+}
+
+func capturedOutput(output io.Writer, capture io.Writer) io.Writer {
+	if output == nil {
+		output = io.Discard
+	}
+	return goyek.SyncWriter(io.MultiWriter(output, capture))
 }
 
 type limitWriter struct {

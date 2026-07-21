@@ -16,7 +16,7 @@ var _ = goyek.Define(goyek.Task{
 		runExec(a, "git diff --exit-code")
 
 		sb := &strings.Builder{}
-		out := io.MultiWriter(a.Output(), sb)
+		out := goyek.SyncWriter(io.MultiWriter(a.Output(), sb))
 		runExec(a, "git status --porcelain", cmd.Stdout(out), cmd.Stderr(out))
 		if sb.Len() > 0 {
 			a.Error("git status --porcelain returned output")

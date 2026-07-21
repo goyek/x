@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
@@ -16,11 +19,14 @@ import (
 	"github.com/goyek/x/otelgoyek"
 )
 
-const attrTaskOutput = "goyek.task.output"
-const traceparent = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
-const spanNameExecute = "Execute"
-const taskNameTest = "test"
-const taskNamePanic = "panic"
+const (
+	attrTaskOutput    = "goyek.task.output"
+	traceparent       = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+	spanNameExecute   = "Execute"
+	taskNameTest      = "test"
+	taskNamePanic     = "panic"
+	concurrentWriters = 10
+)
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
 	exp, tp := setupOTel()
@@ -133,7 +139,7 @@ func TestExecutorMiddleware_ErrorTruncation(t *testing.T) {
 	)
 
 	next := func(_ goyek.ExecuteInput) error {
-		return fmt.Errorf("1234567890")
+		return errors.New("1234567890")
 	}
 
 	executor := mw(next)
@@ -330,6 +336,59 @@ func TestMiddleware_WithOutputLimit(t *testing.T) {
 	}
 }
 
+func TestMiddleware_CapturesConcurrentOutput(t *testing.T) {
+	exp, tp := setupOTel()
+
+	var writeErr error
+	output := &strings.Builder{}
+	f := &goyek.Flow{}
+	f.SetOutput(output)
+	f.Define(goyek.Task{
+		Name: taskNameTest,
+		Action: func(a *goyek.A) {
+			writeErr = writeConcurrentRecords(a.Output(), "task")
+		},
+	})
+	f.Use(otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp)))
+
+	if err := f.Execute(context.Background(), []string{taskNameTest}); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	if writeErr != nil {
+		t.Fatalf("writing task output: %v", writeErr)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	captured := attributeValue(t, spans[0], attrTaskOutput)
+	if destination := output.String(); captured != destination {
+		t.Fatalf("captured output does not match destination output\ncaptured:    %q\ndestination: %q", captured, destination)
+	}
+	assertConcurrentRecords(t, captured, "task")
+}
+
+func TestMiddleware_CapturesOutputWithNilDestination(t *testing.T) {
+	exp, tp := setupOTel()
+	runner := otelgoyek.Middleware(otelgoyek.WithTracerProvider(tp))(goyek.NewRunner(func(a *goyek.A) {
+		fmt.Fprint(a.Output(), "task output")
+	}))
+
+	result := runner(goyek.Input{Context: context.Background(), TaskName: taskNameTest})
+	if result.Status != goyek.StatusPassed {
+		t.Fatalf("runner() status = %s, want PASS", result.Status)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	if got := attributeValue(t, spans[0], attrTaskOutput); got != "task output" {
+		t.Errorf("captured output = %q, want %q", got, "task output")
+	}
+}
+
 func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	exp, tp := setupOTel()
 
@@ -372,6 +431,53 @@ func TestExecutorMiddleware_WithOutputLimit(t *testing.T) {
 	}
 	if got != "123" {
 		t.Errorf("expected truncated output '123', got %q", got)
+	}
+}
+
+func TestExecutorMiddleware_CapturesConcurrentOutput(t *testing.T) {
+	exp, tp := setupOTel()
+	output := &strings.Builder{}
+	mw := otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp))
+	executor := mw(func(in goyek.ExecuteInput) error {
+		return writeConcurrentRecords(in.Output, "flow")
+	})
+
+	if err := executor(goyek.ExecuteInput{
+		Context: context.Background(),
+		Tasks:   []string{taskNameTest},
+		Output:  goyek.SyncWriter(output),
+	}); err != nil {
+		t.Fatalf("executor() error = %v", err)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	captured := attributeValue(t, spans[0], "goyek.flow.output")
+	if destination := output.String(); captured != destination {
+		t.Fatalf("captured output does not match destination output\ncaptured:    %q\ndestination: %q", captured, destination)
+	}
+	assertConcurrentRecords(t, captured, "flow")
+}
+
+func TestExecutorMiddleware_CapturesOutputWithNilDestination(t *testing.T) {
+	exp, tp := setupOTel()
+	executor := otelgoyek.ExecutorMiddleware(otelgoyek.WithTracerProvider(tp))(func(in goyek.ExecuteInput) error {
+		_, err := io.WriteString(in.Output, "flow output")
+		return err
+	})
+
+	if err := executor(goyek.ExecuteInput{Context: context.Background(), Tasks: []string{taskNameTest}}); err != nil {
+		t.Fatalf("executor() error = %v", err)
+	}
+
+	spans := exp.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	if got := attributeValue(t, spans[0], "goyek.flow.output"); got != "flow output" {
+		t.Errorf("captured output = %q, want %q", got, "flow output")
 	}
 }
 
@@ -463,6 +569,61 @@ func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
 		trace.WithSpanProcessor(trace.NewSimpleSpanProcessor(exp)),
 	)
 	return exp, tp
+}
+
+func writeConcurrentRecords(w io.Writer, prefix string) error {
+	start := make(chan struct{})
+	var writers sync.WaitGroup
+	errCh := make(chan error, concurrentWriters)
+	writers.Add(concurrentWriters)
+
+	for writerID := range concurrentWriters {
+		record := fmt.Sprintf("%s-%02d\n", prefix, writerID)
+		go func() {
+			defer writers.Done()
+			<-start
+			n, err := io.WriteString(w, record)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			if n != len(record) {
+				errCh <- io.ErrShortWrite
+			}
+		}()
+	}
+
+	close(start)
+	writers.Wait()
+	close(errCh)
+
+	var errs []error
+	for err := range errCh {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
+}
+
+func assertConcurrentRecords(t *testing.T, output, prefix string) {
+	t.Helper()
+
+	for writerID := range concurrentWriters {
+		record := fmt.Sprintf("%s-%02d\n", prefix, writerID)
+		if got, want := strings.Count(output, record), 1; got != want {
+			t.Errorf("record %q count = %d, want %d", record, got, want)
+		}
+	}
+}
+
+func attributeValue(t *testing.T, span tracetest.SpanStub, key string) string {
+	t.Helper()
+	for _, attr := range span.Attributes {
+		if string(attr.Key) == key {
+			return attr.Value.AsString()
+		}
+	}
+	t.Fatalf("%s attribute not found", key)
+	return ""
 }
 
 func useTraceContextPropagator(t *testing.T) {
