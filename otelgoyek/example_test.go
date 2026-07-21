@@ -17,10 +17,15 @@ import (
 )
 
 func run(ctx context.Context, w io.Writer, tasks []string) (err error) {
-	// Cancel the execution on SIGINT and release the signal notification if the
-	// execution returns normally.
+	// Cancel the execution on SIGINT and restore the default signal behavior so
+	// that a second interrupt terminates the process. Always release the signal
+	// notification if the execution returns normally.
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
+	stopOnDone := context.AfterFunc(ctx, stop)
+	defer func() {
+		stopOnDone()
+		stop()
+	}()
 
 	// Setup OpenTelemetry tracing pipeline.
 	traceExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
