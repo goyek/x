@@ -33,11 +33,10 @@ and this library adheres to
 
 ### Fixed
 
-- Make `otelgoyek` output replacements concurrency-safe with
-  `goyek.SyncWriter`, keeping capture and destination writes in the same
-  per-call order for concurrent calls made through the replacement and
-  preserving discard semantics for nil destinations. Ordinary `Flow` output
-  continues to rely on the synchronization provided by `Flow.Execute`.
+- Make `otelgoyek` output capture safe for concurrent writes, keeping each
+  write in the same order in the destination and captured span. Capture also
+  works when no output destination is set. Regular `Flow` execution
+  synchronizes its output automatically.
 - Prevent ANSI escape sequences in colored task, flow, and logger output from
   being interleaved by concurrent records.
 - Treat nil output as `io.Discard` in colored reporting middleware.
