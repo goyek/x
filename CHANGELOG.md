@@ -30,10 +30,6 @@ and this library adheres to
 
 - Remove logging from `cmd.Exec`, `cmd.Dir`, and `cmd.Env` to prevent sensitive
   information leakage.
-- Document that `color.NoColor` changes process-wide state and must be called
-  during single-threaded program setup.
-- Temporarily bump `github.com/goyek/goyek/v3` to the core output-concurrency
-  commit; replace the pseudo-version with its tagged release before merging.
 
 ### Fixed
 
