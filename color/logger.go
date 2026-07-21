@@ -153,7 +153,6 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 	frames := runtime.CallersFrames(pc[:n])
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	const goyekRunnerFunction = "github.com/goyek/goyek/v3.(*A).run.func1"
 	var firstFrame, prevFrame, frame runtime.Frame
 	for more := true; more; prevFrame = frame {
 		frame, more = frames.Next()
@@ -163,6 +162,12 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 		if firstFrame.PC == 0 {
 			firstFrame = frame
 		}
+		if frame.Function == "github.com/goyek/goyek/v3.(*A).run.func1" {
+			// We've gone up all the way to the runner calling
+			// the action (so the user must have
+			// called a.Helper from inside that action).
+			return prevFrame
+		}
 		// If more helper PCs have been added since we last did the conversion
 		if l.helperNames == nil {
 			l.helperNames = make(map[string]struct{})
@@ -170,17 +175,10 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 				l.helperNames[pcToName(pc)] = struct{}{}
 			}
 		}
-		if _, ok := l.helperNames[frame.Function]; ok {
-			continue
+		if _, ok := l.helperNames[frame.Function]; !ok {
+			// Found a frame that wasn't inside a helper function.
+			return frame
 		}
-		if prevFrame.PC != 0 && frame.Function == goyekRunnerFunction {
-			// We've gone up all the way to the runner calling
-			// the action (so the user must have
-			// called a.Helper from inside that action).
-			return prevFrame
-		}
-		// Found a frame that wasn't inside a helper function.
-		return frame
 	}
 	return firstFrame
 }
