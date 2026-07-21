@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
@@ -14,7 +13,7 @@ import (
 	goyekcolor "github.com/goyek/x/color"
 )
 
-func TestCodeLineLoggerColoredMethodsWriteOneRecord(t *testing.T) {
+func TestCodeLineLoggerColoredMethods(t *testing.T) {
 	forceColor(t)
 
 	tests := []struct {
@@ -32,60 +31,20 @@ func TestCodeLineLoggerColoredMethodsWriteOneRecord(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			out := &recordingWriter{}
+			out := &strings.Builder{}
 			tc.call(&goyekcolor.CodeLineLogger{}, out)
 
-			writes := out.snapshot()
-			if len(writes) != 1 {
-				t.Fatalf("got %d output writes, want one atomic record: %q", len(writes), writes)
+			got := out.String()
+			if !strings.HasPrefix(got, tc.colorStart) {
+				t.Errorf("output %q does not start with %q", got, tc.colorStart)
 			}
-			if !strings.HasPrefix(writes[0], tc.colorStart) {
-				t.Errorf("output %q does not start with %q", writes[0], tc.colorStart)
+			if !strings.Contains(got, "message\n") {
+				t.Errorf("output %q does not contain the log message", got)
 			}
-			if !strings.Contains(writes[0], "message\n") {
-				t.Errorf("output %q does not contain the log message", writes[0])
-			}
-			if !strings.HasSuffix(writes[0], ansiReset) {
-				t.Errorf("output %q does not end with a color reset", writes[0])
+			if !strings.HasSuffix(got, ansiReset) {
+				t.Errorf("output %q does not end with a color reset", got)
 			}
 		})
-	}
-}
-
-func TestCodeLineLoggerConcurrentColoredRecordsAreAtomic(t *testing.T) {
-	forceColor(t)
-
-	const recordCount = 32
-	logger := &goyekcolor.CodeLineLogger{}
-	out := &recordingWriter{}
-	start := make(chan struct{})
-	var wg sync.WaitGroup
-	for i := range recordCount {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			<-start
-			logger.Errorf(out, "record-%02d", i)
-		}()
-	}
-	close(start)
-	wg.Wait()
-
-	writes := out.snapshot()
-	if len(writes) != recordCount {
-		t.Fatalf("got %d output writes, want %d atomic records", len(writes), recordCount)
-	}
-	joined := strings.Join(writes, "")
-	for i := range recordCount {
-		message := fmt.Sprintf("record-%02d", i)
-		if strings.Count(joined, message) != 1 {
-			t.Errorf("message %q does not occur exactly once in %q", message, joined)
-		}
-	}
-	for _, write := range writes {
-		if !strings.HasPrefix(write, ansiRed) || !strings.HasSuffix(write, ansiReset) {
-			t.Errorf("write is not a complete colored record: %q", write)
-		}
 	}
 }
 

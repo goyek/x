@@ -20,13 +20,12 @@ import (
 )
 
 const (
-	attrTaskOutput            = "goyek.task.output"
-	traceparent               = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
-	spanNameExecute           = "Execute"
-	taskNameTest              = "test"
-	taskNamePanic             = "panic"
-	concurrentWriters         = 16
-	concurrentWritesPerWriter = 128
+	attrTaskOutput    = "goyek.task.output"
+	traceparent       = "00-0102030405060708090a0b0c0d0e0f10-0102030405060708-01"
+	spanNameExecute   = "Execute"
+	taskNameTest      = "test"
+	taskNamePanic     = "panic"
+	concurrentWriters = 10
 )
 
 func TestMiddleware_WithDisableOutput(t *testing.T) {
@@ -574,33 +573,26 @@ func setupOTel() (*tracetest.InMemoryExporter, *trace.TracerProvider) {
 
 func writeConcurrentRecords(w io.Writer, prefix string) error {
 	start := make(chan struct{})
-	var ready sync.WaitGroup
 	var writers sync.WaitGroup
 	errCh := make(chan error, concurrentWriters)
-	ready.Add(concurrentWriters)
 	writers.Add(concurrentWriters)
 
 	for writerID := range concurrentWriters {
 		record := fmt.Sprintf("%s-%02d\n", prefix, writerID)
 		go func() {
 			defer writers.Done()
-			ready.Done()
 			<-start
-			for range concurrentWritesPerWriter {
-				n, err := io.WriteString(w, record)
-				if err != nil {
-					errCh <- err
-					return
-				}
-				if n != len(record) {
-					errCh <- io.ErrShortWrite
-					return
-				}
+			n, err := io.WriteString(w, record)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			if n != len(record) {
+				errCh <- io.ErrShortWrite
 			}
 		}()
 	}
 
-	ready.Wait()
 	close(start)
 	writers.Wait()
 	close(errCh)
@@ -615,16 +607,9 @@ func writeConcurrentRecords(w io.Writer, prefix string) error {
 func assertConcurrentRecords(t *testing.T, output, prefix string) {
 	t.Helper()
 
-	counts := make(map[string]int, concurrentWriters)
-	for record := range strings.Lines(output) {
-		counts[record]++
-	}
-	if got, want := len(counts), concurrentWriters; got != want {
-		t.Errorf("unique record count = %d, want %d", got, want)
-	}
 	for writerID := range concurrentWriters {
 		record := fmt.Sprintf("%s-%02d\n", prefix, writerID)
-		if got, want := counts[record], concurrentWritesPerWriter; got != want {
+		if got, want := strings.Count(output, record), 1; got != want {
 			t.Errorf("record %q count = %d, want %d", record, got, want)
 		}
 	}

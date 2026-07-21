@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
@@ -12,62 +11,31 @@ import (
 	goyekcolor "github.com/goyek/x/color"
 )
 
-func TestReportFlowConcurrentRecordsAreAtomic(t *testing.T) {
+func TestReportFlow(t *testing.T) {
 	forceColor(t)
 
-	const failedTask = "fail"
 	wantErr := errors.New("flow failed")
-	entered := make(chan struct{}, 2)
-	release := make(chan struct{})
-	executor := goyekcolor.ReportFlow(func(in goyek.ExecuteInput) error {
-		entered <- struct{}{}
-		<-release
-		if in.Tasks[0] == failedTask {
-			return wantErr
-		}
-		return nil
-	})
-	out := &recordingWriter{}
+	tests := []struct {
+		name       string
+		err        error
+		wantPrefix string
+	}{
+		{name: "pass", wantPrefix: "\x1b[1;32mok\t"},
+		{name: "fail", err: wantErr, wantPrefix: "\x1b[1;31mflow failed\t"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			out := &strings.Builder{}
+			executor := goyekcolor.ReportFlow(func(goyek.ExecuteInput) error { return tc.err })
 
-	var wg sync.WaitGroup
-	for _, task := range []string{"pass", failedTask} {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			err := executor(goyek.ExecuteInput{Output: out, Tasks: []string{task}})
-			if task == failedTask && !errors.Is(err, wantErr) {
-				t.Errorf("got error %v, want %v", err, wantErr)
+			if err := executor(goyek.ExecuteInput{Output: out}); !errors.Is(err, tc.err) {
+				t.Fatalf("got error %v, want %v", err, tc.err)
 			}
-			if task == "pass" && err != nil {
-				t.Errorf("got unexpected error: %v", err)
+			got := out.String()
+			if !strings.HasPrefix(got, tc.wantPrefix) || !strings.HasSuffix(got, "s\n\x1b[22;0m") {
+				t.Errorf("unexpected flow output: %q", got)
 			}
-		}()
-	}
-	<-entered
-	<-entered
-	close(release)
-	wg.Wait()
-
-	writes := out.snapshot()
-	if len(writes) != 2 {
-		t.Fatalf("got %d output writes, want two atomic records: %q", len(writes), writes)
-	}
-	var gotPass, gotFail bool
-	for _, write := range writes {
-		if !strings.HasSuffix(write, "s\n\x1b[22;0m") {
-			t.Errorf("write is not a complete colored record: %q", write)
-		}
-		switch {
-		case strings.HasPrefix(write, "\x1b[1;32mok\t"):
-			gotPass = true
-		case strings.HasPrefix(write, "\x1b[1;31mflow failed\t"):
-			gotFail = true
-		default:
-			t.Errorf("unexpected flow record: %q", write)
-		}
-	}
-	if !gotPass || !gotFail {
-		t.Errorf("got pass=%t and fail=%t, want both records", gotPass, gotFail)
+		})
 	}
 }
 

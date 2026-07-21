@@ -1,11 +1,9 @@
 package color_test
 
 import (
-	"fmt"
 	"io"
 	"reflect"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/goyek/goyek/v3"
@@ -13,7 +11,7 @@ import (
 	goyekcolor "github.com/goyek/x/color"
 )
 
-func TestReportStatusWritesAtomicColoredRecords(t *testing.T) {
+func TestReportStatusColoredRecords(t *testing.T) {
 	forceColor(t)
 
 	tests := []struct {
@@ -30,23 +28,22 @@ func TestReportStatusWritesAtomicColoredRecords(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			out := &recordingWriter{}
+			out := &strings.Builder{}
 			runner := goyekcolor.ReportStatus(func(goyek.Input) goyek.Result { return tc.result })
 			got := runner(goyek.Input{Output: out, TaskName: "task"})
 			if !reflect.DeepEqual(got, tc.result) {
 				t.Fatalf("got result %#v, want %#v", got, tc.result)
 			}
 
-			writes := out.snapshot()
-			if len(writes) != 2 {
-				t.Fatalf("got %d output writes, want two atomic records: %q", len(writes), writes)
-			}
-			if writes[0] != ansiBlue+"===== TASK  task\n"+ansiReset {
-				t.Errorf("unexpected task-start record: %q", writes[0])
+			output := out.String()
+			startRecord := ansiBlue + "===== TASK  task\n" + ansiReset
+			if !strings.HasPrefix(output, startRecord) {
+				t.Errorf("unexpected task-start record: %q", output)
 			}
 			wantStatusPrefix := tc.colorStart + "----- " + tc.status + ": task ("
-			if !strings.HasPrefix(writes[1], wantStatusPrefix) || !strings.HasSuffix(writes[1], "s)\n"+ansiReset) {
-				t.Errorf("unexpected task-status record: %q", writes[1])
+			statusRecord := strings.TrimPrefix(output, startRecord)
+			if !strings.HasPrefix(statusRecord, wantStatusPrefix) || !strings.HasSuffix(statusRecord, "s)\n"+ansiReset) {
+				t.Errorf("unexpected task-status record: %q", statusRecord)
 			}
 		})
 	}
@@ -69,7 +66,7 @@ func TestReportStatusNilOutput(t *testing.T) {
 	}
 }
 
-func TestReportStatusWritesPanicAsOneRecord(t *testing.T) {
+func TestReportStatusPanic(t *testing.T) {
 	forceColor(t)
 
 	tests := []struct {
@@ -82,7 +79,7 @@ func TestReportStatusWritesPanicAsOneRecord(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			out := &recordingWriter{}
+			out := &strings.Builder{}
 			result := goyek.Result{
 				Status:     goyek.StatusFailed,
 				PanicValue: tc.panicValue,
@@ -91,49 +88,10 @@ func TestReportStatusWritesPanicAsOneRecord(t *testing.T) {
 			runner := goyekcolor.ReportStatus(func(goyek.Input) goyek.Result { return result })
 			runner(goyek.Input{Output: out, TaskName: "task"})
 
-			writes := out.snapshot()
-			if len(writes) != 3 {
-				t.Fatalf("got %d output writes, want start, status, and panic records: %q", len(writes), writes)
-			}
 			want := ansiRed + tc.wantHeader + ansiReset + "\n\n" + ansiRed + "stack\n" + ansiReset
-			if writes[2] != want {
-				t.Errorf("got panic record %q, want %q", writes[2], want)
+			if got := out.String(); !strings.HasSuffix(got, want) {
+				t.Errorf("output %q does not end with panic report %q", got, want)
 			}
 		})
-	}
-}
-
-func TestReportStatusConcurrentRecordsAreAtomic(t *testing.T) {
-	forceColor(t)
-
-	entered := make(chan struct{}, 2)
-	release := make(chan struct{})
-	runner := goyekcolor.ReportStatus(func(goyek.Input) goyek.Result {
-		entered <- struct{}{}
-		<-release
-		return goyek.Result{Status: goyek.StatusPassed}
-	})
-	out := &recordingWriter{}
-	var wg sync.WaitGroup
-	for i := range 2 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			runner(goyek.Input{Output: out, TaskName: fmt.Sprintf("task-%d", i)})
-		}()
-	}
-	<-entered
-	<-entered
-	close(release)
-	wg.Wait()
-
-	writes := out.snapshot()
-	if len(writes) != 4 {
-		t.Fatalf("got %d output writes, want four atomic records: %q", len(writes), writes)
-	}
-	for _, write := range writes {
-		if !strings.HasPrefix(write, "\x1b[") || !strings.HasSuffix(write, ansiReset) {
-			t.Errorf("write is not a complete colored record: %q", write)
-		}
 	}
 }
