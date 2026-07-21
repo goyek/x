@@ -153,9 +153,7 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 	frames := runtime.CallersFrames(pc[:n])
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	// Use the stable package boundary instead of a private runner function name,
-	// which can change when goyek's implementation is refactored.
-	const goyekFunctionPrefix = "github.com/goyek/goyek/v3."
+	const goyekRunnerFunction = "github.com/goyek/goyek/v3.(*A).run.func1"
 	var firstFrame, prevFrame, frame runtime.Frame
 	for more := true; more; prevFrame = frame {
 		frame, more = frames.Next()
@@ -175,7 +173,7 @@ func (l *CodeLineLogger) frameSkip(skip int) runtime.Frame {
 		if _, ok := l.helperNames[frame.Function]; ok {
 			continue
 		}
-		if prevFrame.PC != 0 && strings.HasPrefix(frame.Function, goyekFunctionPrefix) {
+		if prevFrame.PC != 0 && frame.Function == goyekRunnerFunction {
 			// We've gone up all the way to the runner calling
 			// the action (so the user must have
 			// called a.Helper from inside that action).
