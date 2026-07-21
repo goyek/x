@@ -60,6 +60,32 @@ func TestCodeLineLogger_helper_in_action(t *testing.T) {
 	}
 }
 
+func TestCodeLineLogger_goyek_helper(t *testing.T) {
+	flow := &goyek.Flow{}
+	out := &strings.Builder{}
+	flow.SetOutput(out)
+	flow.SetLogger(&goyekcolor.CodeLineLogger{})
+	flow.Define(goyek.Task{
+		Name:     "task",
+		Parallel: true,
+		Action: func(a *goyek.A) {
+			a.Setenv("GOYEK_COLOR_LOGGER_TEST", "value")
+		},
+	})
+
+	_ = flow.Execute(context.Background(), []string{"task"})
+
+	got := out.String()
+	for _, want := range []string{"logger_test.go:", "Setenv called in a parallel task"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("output %q does not contain %q", got, want)
+		}
+	}
+	if strings.Contains(got, "???:1:") {
+		t.Errorf("output contains unknown caller: %q", got)
+	}
+}
+
 func helperFn(a *goyek.A) {
 	a.Helper()
 	a.Log("message from helper")
