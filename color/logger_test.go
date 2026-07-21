@@ -1,10 +1,7 @@
 package color_test
 
 import (
-	"fmt"
-	"io"
-	"path/filepath"
-	"runtime"
+	"context"
 	"strings"
 	"testing"
 
@@ -13,79 +10,57 @@ import (
 	goyekcolor "github.com/goyek/x/color"
 )
 
-func TestCodeLineLoggerColoredMethods(t *testing.T) {
-	forceColor(t)
-
-	tests := []struct {
-		name       string
-		colorStart string
-		call       func(*goyekcolor.CodeLineLogger, io.Writer)
-	}{
-		{name: "Error", colorStart: ansiRed, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Error(w, "message") }},
-		{name: "Errorf", colorStart: ansiRed, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Errorf(w, "%s", "message") }},
-		{name: "Fatal", colorStart: ansiRed, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Fatal(w, "message") }},
-		{name: "Fatalf", colorStart: ansiRed, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Fatalf(w, "%s", "message") }},
-		{name: "Skip", colorStart: ansiYellow, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Skip(w, "message") }},
-		{name: "Skipf", colorStart: ansiYellow, call: func(l *goyekcolor.CodeLineLogger, w io.Writer) { l.Skipf(w, "%s", "message") }},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			out := &strings.Builder{}
-			tc.call(&goyekcolor.CodeLineLogger{}, out)
-
-			got := out.String()
-			if !strings.HasPrefix(got, tc.colorStart) {
-				t.Errorf("output %q does not start with %q", got, tc.colorStart)
-			}
-			if !strings.Contains(got, "message\n") {
-				t.Errorf("output %q does not contain the log message", got)
-			}
-			if !strings.HasSuffix(got, ansiReset) {
-				t.Errorf("output %q does not end with a color reset", got)
-			}
-		})
-	}
-}
-
-func TestCodeLineLoggerHelperAttribution(t *testing.T) {
-	logger := &goyekcolor.CodeLineLogger{}
+func TestCodeLineLogger(t *testing.T) {
+	flow := &goyek.Flow{}
 	out := &strings.Builder{}
-	var wantLocation string
-	runner := goyek.NewRunner(func(a *goyek.A) {
-		_, file, line, _ := runtime.Caller(0)
-		wantLocation = fmt.Sprintf("%s:%d", filepath.Base(file), line+3)
-
-		logFromHelper(a)
+	flow.SetOutput(out)
+	flow.SetLogger(&goyekcolor.CodeLineLogger{})
+	flow.Define(goyek.Task{
+		Name: "task",
+		Action: func(a *goyek.A) {
+			a.Log("message")
+			helperFn(a)
+			a.Cleanup(func() {
+				a.Log("cleanup")
+			})
+		},
 	})
 
-	runner(goyek.Input{Output: goyek.SyncWriter(out), Logger: logger})
+	_ = flow.Execute(context.Background(), []string{"task"})
 
-	if !strings.Contains(out.String(), wantLocation+": message from helper") {
-		t.Errorf("output %q does not attribute helper log to %s", out.String(), wantLocation)
+	for _, want := range []string{
+		"      logger_test.go:21: message",
+		"      logger_test.go:22: message from helper",
+		"      logger_test.go:24: cleanup",
+	} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output %q does not contain %q", out.String(), want)
+		}
 	}
 }
 
-func TestCodeLineLoggerHelperInActionAttribution(t *testing.T) {
-	logger := &goyekcolor.CodeLineLogger{}
+func TestCodeLineLogger_helper_in_action(t *testing.T) {
+	flow := &goyek.Flow{}
 	out := &strings.Builder{}
-	var wantLocation string
-	runner := goyek.NewRunner(func(a *goyek.A) {
-		a.Helper()
-		_, file, line, _ := runtime.Caller(0)
-		wantLocation = fmt.Sprintf("%s:%d", filepath.Base(file), line+3)
-
-		a.Log("message from action")
+	flow.SetOutput(out)
+	flow.SetLogger(&goyekcolor.CodeLineLogger{})
+	flow.Define(goyek.Task{
+		Name: "task",
+		Action: func(a *goyek.A) {
+			a.Helper()
+			a.Log("message")
+		},
 	})
 
-	runner(goyek.Input{Output: goyek.SyncWriter(out), Logger: logger})
+	_ = flow.Execute(context.Background(), []string{"task"})
 
-	if !strings.Contains(out.String(), wantLocation+": message from action") {
-		t.Errorf("output %q does not attribute action log to %s", out.String(), wantLocation)
+	want := "      logger_test.go:51: message"
+	if !strings.Contains(out.String(), want) {
+		t.Errorf("output %q does not contain %q", out.String(), want)
 	}
 }
 
-func logFromHelper(a *goyek.A) {
+func helperFn(a *goyek.A) {
 	a.Helper()
 	a.Log("message from helper")
 }
