@@ -10,7 +10,7 @@ var spell = goyek.Define(goyek.Task{
 	Name:  "spell",
 	Usage: "misspell",
 	Action: func(a *goyek.A) {
-		if !runExec(a, "go install github.com/client9/misspell/cmd/misspell", runDir(a, dirBuild)) {
+		if !runExec(a, "go install github.com/golangci/misspell/cmd/misspell", runDir(a, dirBuild)) {
 			return
 		}
 		mdFiles := find(a, ".md")
