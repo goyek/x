@@ -175,3 +175,61 @@ func TestExec_EnvOnly(t *testing.T) {
 	}()
 	Exec(&goyek.A{}, "FOO=bar")
 }
+
+func TestMask(t *testing.T) {
+	testCases := []struct {
+		name    string
+		cmdLine string
+		want    string
+	}{
+		{
+			name:    "empty",
+			cmdLine: "",
+			want:    "",
+		},
+		{
+			name:    "no env",
+			cmdLine: "ls -l",
+			want:    "ls -l",
+		},
+		{
+			name:    "one env",
+			cmdLine: "FOO=bar ls -l",
+			want:    "FOO=[MASKED] ls -l",
+		},
+		{
+			name:    "multiple envs",
+			cmdLine: "FOO=bar BAZ=qux ls -l",
+			want:    "FOO=[MASKED] BAZ=[MASKED] ls -l",
+		},
+		{
+			name:    "multiple envs with spaces",
+			cmdLine: "FOO=bar BAZ=\"qux quux\" ls -l",
+			want:    "FOO=[MASKED] BAZ=[MASKED] ls -l",
+		},
+		{
+			name:    "arg with spaces",
+			cmdLine: "echo \"hello world\"",
+			want:    "echo \"hello world\"",
+		},
+		{
+			name:    "env and arg with spaces",
+			cmdLine: "SECRET=password echo \"hello world\"",
+			want:    "SECRET=[MASKED] echo \"hello world\"",
+		},
+		{
+			name:    "invalid command line",
+			cmdLine: "echo \"hello",
+			want:    "echo \"hello",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Mask(tc.cmdLine)
+			if got != tc.want {
+				t.Errorf("Mask(%q) = %q, want %q", tc.cmdLine, got, tc.want)
+			}
+		})
+	}
+}

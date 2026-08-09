@@ -8,7 +8,7 @@ import (
 
 func runExec(a *goyek.A, cmdLine string, opts ...cmd.Option) bool {
 	a.Helper()
-	a.Log("Exec: ", cmdLine)
+	a.Log("Exec: ", cmd.Mask(cmdLine))
 	return cmd.Exec(a, cmdLine, opts...)
 }
 
