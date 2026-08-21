@@ -33,6 +33,9 @@ and this library adheres to
 
 ### Fixed
 
+- Reject task names placed after flags in `boot.Main` instead of silently
+  ignoring them, while continuing to expose arguments after `--` via
+  `flag.Args`.
 - Make `otelgoyek` output capture safe for concurrent writes, keeping each
   write in the same order in the destination and captured span. Capture also
   works when no output destination is set. Regular `Flow` execution

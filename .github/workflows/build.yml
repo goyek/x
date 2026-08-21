@@ -23,7 +23,7 @@ jobs:
           go-version: '1.26'
           cache-dependency-path: '**/go.sum'
       - name: Build
-        run: ./goyek.sh -v all diff
+        run: ./goyek.sh all diff -v
 
   compatibility-test:
     strategy:

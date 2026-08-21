@@ -41,10 +41,10 @@ var (
 //
 // To add custom flags, define them before calling Main (see the example).
 func Main() {
-	tasks, args := goyek.SplitTasks(os.Args[1:])
 	flag.CommandLine.SetOutput(goyek.Output())
 	flag.Usage = usage
-	if err := flag.CommandLine.Parse(args); err != nil {
+	tasks, err := parseArgs(flag.CommandLine, os.Args[1:])
+	if err != nil {
 		fmt.Fprintln(goyek.Output(), err)
 		os.Exit(exitCodeInvalid)
 	}
@@ -91,6 +91,35 @@ func Main() {
 	goyek.SetUsage(usage)
 	goyek.SetLogger(&color.CodeLineLogger{})
 	goyek.Main(tasks, opts...)
+}
+
+func parseArgs(flags *flag.FlagSet, args []string) ([]string, error) {
+	tasks, flagArgs := goyek.SplitTasks(args)
+
+	separator := len(flagArgs)
+	for i, arg := range flagArgs {
+		if arg == "--" {
+			separator = i
+			break
+		}
+	}
+
+	if err := flags.Parse(flagArgs[:separator]); err != nil {
+		return nil, err
+	}
+	if flags.NArg() > 0 {
+		return nil, fmt.Errorf("unexpected arguments: %v", flags.Args())
+	}
+
+	if separator < len(flagArgs) {
+		// Parse the separator again so FlagSet.Args reports only the arguments
+		// that intentionally follow it.
+		if err := flags.Parse(flagArgs[separator:]); err != nil {
+			return nil, err
+		}
+	}
+
+	return tasks, nil
 }
 
 func usage() {
