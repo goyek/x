@@ -175,3 +175,70 @@ func TestExec_EnvOnly(t *testing.T) {
 	}()
 	Exec(&goyek.A{}, "FOO=bar")
 }
+
+func TestEnv_Inheritance(t *testing.T) {
+	t.Setenv("GOYEK_TEST_VAR", "present")
+	a := &goyek.A{}
+	cmd := &exec.Cmd{} // Env is nil
+
+	Env("NEW_VAR", "value")(a, cmd)
+
+	foundTestVar := false
+	for _, e := range cmd.Env {
+		if strings.HasPrefix(e, "GOYEK_TEST_VAR=") {
+			foundTestVar = true
+			break
+		}
+	}
+	if !foundTestVar {
+		t.Error("expected GOYEK_TEST_VAR to be inherited when using Env option on nil cmd.Env")
+	}
+}
+
+func TestExec_Precedence(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			// Inline FOO=baz should override Option Env FOO=bar
+			// We use 'env' command to print the environment
+			Exec(a, "FOO=baz env", Env("FOO", "bar"), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	// In Go exec.Cmd.Env, the last one wins.
+	lines := strings.Split(got, "\n")
+	var lastFoo string
+	for _, line := range lines {
+		if strings.HasPrefix(line, "FOO=") {
+			lastFoo = line
+		}
+	}
+
+	if lastFoo != "FOO=baz" {
+		t.Errorf("expected FOO=baz to have higher precedence, but got %q", lastFoo)
+	}
+}
+
+func TestExec_ClearEnv_Inline(t *testing.T) {
+	f := &goyek.Flow{}
+	var output strings.Builder
+	f.Define(goyek.Task{
+		Name: "test",
+		Action: func(a *goyek.A) {
+			// Inline FOO=baz should NOT be cleared by ClearEnv()
+			Exec(a, "FOO=baz env", ClearEnv(), Stdout(&output))
+		},
+	})
+
+	_ = f.Execute(context.Background(), []string{"test"})
+
+	got := output.String()
+	if !strings.Contains(got, "FOO=baz") {
+		t.Error("FOO=baz was lost due to ClearEnv()")
+	}
+}
